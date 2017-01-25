@@ -7,28 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		77B4B4311E387360006263EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4301E387360006263EE /* main.m */; };
+		77B4B4481E3952E2006263EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4471E3952E2006263EE /* main.m */; };
+		77B4B4551E3953CE006263EE /* Expose.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77B4B4541E3953CE006263EE /* Expose.icns */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		77B4B42B1E387360006263EE /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		77B4B42D1E387360006263EE /* missionControlFullDesktopBar */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = missionControlFullDesktopBar; sourceTree = BUILT_PRODUCTS_DIR; };
-		77B4B4301E387360006263EE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		77B4B4401E3952E2006263EE /* missionControlFullDesktopBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = missionControlFullDesktopBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		77B4B4471E3952E2006263EE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		77B4B44E1E3952E2006263EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		77B4B4541E3953CE006263EE /* Expose.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Expose.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		77B4B42A1E387360006263EE /* Frameworks */ = {
+		77B4B43D1E3952E2006263EE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,26 +29,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		77B4B4241E387360006263EE = {
+		77B4B4371E3952E2006263EE = {
 			isa = PBXGroup;
 			children = (
-				77B4B42F1E387360006263EE /* missionControlFullDesktopBar */,
-				77B4B42E1E387360006263EE /* Products */,
+				77B4B4421E3952E2006263EE /* missionControlFullDesktopBar */,
+				77B4B4411E3952E2006263EE /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		77B4B42E1E387360006263EE /* Products */ = {
+		77B4B4411E3952E2006263EE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				77B4B42D1E387360006263EE /* missionControlFullDesktopBar */,
+				77B4B4401E3952E2006263EE /* missionControlFullDesktopBar.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		77B4B42F1E387360006263EE /* missionControlFullDesktopBar */ = {
+		77B4B4421E3952E2006263EE /* missionControlFullDesktopBar */ = {
 			isa = PBXGroup;
 			children = (
-				77B4B4301E387360006263EE /* main.m */,
+				77B4B44E1E3952E2006263EE /* Info.plist */,
+				77B4B4541E3953CE006263EE /* Expose.icns */,
+				77B4B4471E3952E2006263EE /* main.m */,
 			);
 			path = missionControlFullDesktopBar;
 			sourceTree = "<group>";
@@ -65,13 +58,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		77B4B42C1E387360006263EE /* missionControlFullDesktopBar */ = {
+		77B4B43F1E3952E2006263EE /* missionControlFullDesktopBar */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 77B4B4341E387360006263EE /* Build configuration list for PBXNativeTarget "missionControlFullDesktopBar" */;
+			buildConfigurationList = 77B4B4511E3952E2006263EE /* Build configuration list for PBXNativeTarget "missionControlFullDesktopBar" */;
 			buildPhases = (
-				77B4B4291E387360006263EE /* Sources */,
-				77B4B42A1E387360006263EE /* Frameworks */,
-				77B4B42B1E387360006263EE /* CopyFiles */,
+				77B4B43C1E3952E2006263EE /* Sources */,
+				77B4B43D1E3952E2006263EE /* Frameworks */,
+				77B4B43E1E3952E2006263EE /* Resources */,
 			);
 			buildRules = (
 			);
@@ -79,55 +72,67 @@
 			);
 			name = missionControlFullDesktopBar;
 			productName = missionControlFullDesktopBar;
-			productReference = 77B4B42D1E387360006263EE /* missionControlFullDesktopBar */;
-			productType = "com.apple.product-type.tool";
+			productReference = 77B4B4401E3952E2006263EE /* missionControlFullDesktopBar.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		77B4B4251E387360006263EE /* Project object */ = {
+		77B4B4381E3952E2006263EE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Brian Kendall";
 				TargetAttributes = {
-					77B4B42C1E387360006263EE = {
+					77B4B43F1E3952E2006263EE = {
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = F8M4YUY649;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = 77B4B4281E387360006263EE /* Build configuration list for PBXProject "missionControlFullDesktopBar" */;
+			buildConfigurationList = 77B4B43B1E3952E2006263EE /* Build configuration list for PBXProject "missionControlFullDesktopBar" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
-			mainGroup = 77B4B4241E387360006263EE;
-			productRefGroup = 77B4B42E1E387360006263EE /* Products */;
+			mainGroup = 77B4B4371E3952E2006263EE;
+			productRefGroup = 77B4B4411E3952E2006263EE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				77B4B42C1E387360006263EE /* missionControlFullDesktopBar */,
+				77B4B43F1E3952E2006263EE /* missionControlFullDesktopBar */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		77B4B43E1E3952E2006263EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				77B4B4551E3953CE006263EE /* Expose.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		77B4B4291E387360006263EE /* Sources */ = {
+		77B4B43C1E3952E2006263EE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				77B4B4311E387360006263EE /* main.m in Sources */,
+				77B4B4481E3952E2006263EE /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		77B4B4321E387360006263EE /* Debug */ = {
+		77B4B44F1E3952E2006263EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -174,7 +179,7 @@
 			};
 			name = Debug;
 		};
-		77B4B4331E387360006263EE /* Release */ = {
+		77B4B4501E3952E2006263EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -214,18 +219,28 @@
 			};
 			name = Release;
 		};
-		77B4B4351E387360006263EE /* Debug */ = {
+		77B4B4521E3952E2006263EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = F8M4YUY649;
+				INFOPLIST_FILE = missionControlFullDesktopBar/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.briankendall.missionControlFullDesktopBar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		77B4B4361E387360006263EE /* Release */ = {
+		77B4B4531E3952E2006263EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = F8M4YUY649;
+				INFOPLIST_FILE = missionControlFullDesktopBar/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.briankendall.missionControlFullDesktopBar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -233,24 +248,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		77B4B4281E387360006263EE /* Build configuration list for PBXProject "missionControlFullDesktopBar" */ = {
+		77B4B43B1E3952E2006263EE /* Build configuration list for PBXProject "missionControlFullDesktopBar" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				77B4B4321E387360006263EE /* Debug */,
-				77B4B4331E387360006263EE /* Release */,
+				77B4B44F1E3952E2006263EE /* Debug */,
+				77B4B4501E3952E2006263EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		77B4B4341E387360006263EE /* Build configuration list for PBXNativeTarget "missionControlFullDesktopBar" */ = {
+		77B4B4511E3952E2006263EE /* Build configuration list for PBXNativeTarget "missionControlFullDesktopBar" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				77B4B4351E387360006263EE /* Debug */,
-				77B4B4361E387360006263EE /* Release */,
+				77B4B4521E3952E2006263EE /* Debug */,
+				77B4B4531E3952E2006263EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 77B4B4251E387360006263EE /* Project object */;
+	rootObject = 77B4B4381E3952E2006263EE /* Project object */;
 }
