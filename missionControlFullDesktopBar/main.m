@@ -145,8 +145,18 @@ void invokeMissionControl()
     [NSTask launchedTaskWithLaunchPath:executablePath arguments:@[]];
 }
 
+bool accessibilityAvailable()
+{
+    return AXIsProcessTrustedWithOptions((CFDictionaryRef)@{(__bridge NSString *)kAXTrustedCheckOptionPrompt: @true});
+}
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        if (!accessibilityAvailable()) {
+            NSLog(@"Cannot run without Accessibility");
+            return 1;
+        }
+        
         invokeMissionControl();
         NSLog(@"\n\nBeginning initial wait period");
         usleep(kWiggleInitialWaitMS * NSEC_PER_USEC);

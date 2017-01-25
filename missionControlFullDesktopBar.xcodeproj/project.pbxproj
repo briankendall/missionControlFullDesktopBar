@@ -222,7 +222,6 @@
 		77B4B4521E3952E2006263EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = F8M4YUY649;
 				INFOPLIST_FILE = missionControlFullDesktopBar/Info.plist;
@@ -235,7 +234,6 @@
 		77B4B4531E3952E2006263EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = F8M4YUY649;
 				INFOPLIST_FILE = missionControlFullDesktopBar/Info.plist;
