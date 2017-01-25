@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		77B4B4481E3952E2006263EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4471E3952E2006263EE /* main.m */; };
 		77B4B4551E3953CE006263EE /* Expose.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77B4B4541E3953CE006263EE /* Expose.icns */; };
+		77B4B4571E395F9B006263EE /* processes.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4561E395F9B006263EE /* processes.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +17,8 @@
 		77B4B4471E3952E2006263EE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		77B4B44E1E3952E2006263EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		77B4B4541E3953CE006263EE /* Expose.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Expose.icns; sourceTree = "<group>"; };
+		77B4B4561E395F9B006263EE /* processes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = processes.m; sourceTree = "<group>"; };
+		77B4B4581E39607F006263EE /* processes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = processes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +54,8 @@
 				77B4B44E1E3952E2006263EE /* Info.plist */,
 				77B4B4541E3953CE006263EE /* Expose.icns */,
 				77B4B4471E3952E2006263EE /* main.m */,
+				77B4B4561E395F9B006263EE /* processes.m */,
+				77B4B4581E39607F006263EE /* processes.h */,
 			);
 			path = missionControlFullDesktopBar;
 			sourceTree = "<group>";
@@ -126,6 +131,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				77B4B4481E3952E2006263EE /* main.m in Sources */,
+				77B4B4571E395F9B006263EE /* processes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

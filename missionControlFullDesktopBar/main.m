@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import "processes.h"
 
 #define kWiggleInitialWaitMS 60
 #define kWiggleDurationMS 100
@@ -205,6 +206,19 @@ bool determineIfInMissionControl(bool *result)
     return true;
 }
 
+bool appIsAlreadyRunning()
+{
+    int sysctlError = 0;
+    unsigned int matches = 0;
+    NSString *processName = [[NSProcessInfo processInfo] processName];
+    
+    // Unfortunately we can't use NSRunningApplication as this app will not show up in its list.
+    // We instead have to use a much lower level way of getting all the running processes:
+    int error = getCountOfProcessesWithName([processName cStringUsingEncoding:NSUTF8StringEncoding], &matches, &sysctlError);
+    
+    return (error == kSuccess && matches > 1);
+}
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         if (!accessibilityAvailable()) {
@@ -219,6 +233,11 @@ int main(int argc, const char * argv[]) {
         }
         
         invokeMissionControl();
+        
+        if (appIsAlreadyRunning()) {
+            NSLog(@"Already running");
+            return 0;
+        }
         
         if (alreadyInMissionControl) {
             NSLog(@"Already in Mission Control");
