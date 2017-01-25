@@ -150,6 +150,59 @@ bool accessibilityAvailable()
     return AXIsProcessTrustedWithOptions((CFDictionaryRef)@{(__bridge NSString *)kAXTrustedCheckOptionPrompt: @true});
 }
 
+// Sets the memory result points to to true if Mission Control is up. Returns true if able to
+// successfully determine the state of Mission Control, false if an error occurred.
+bool determineIfInMissionControl(bool *result)
+{
+    (*result) = false;
+    NSArray *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"];
+    
+    if (apps.count == 0) {
+        NSLog(@"Error: Dock is not running!");
+        return false;
+    }
+    
+    NSRunningApplication *dock = apps[0];
+    AXUIElementRef dockElement = AXUIElementCreateApplication(dock.processIdentifier);
+    
+    if (!dockElement) {
+        NSLog(@"Error: cannot create AXUIElementRef for Dock");
+        return false;
+    }
+    
+    CFArrayRef children = NULL;
+    AXError error = AXUIElementCopyAttributeValue(dockElement, kAXChildrenAttribute, (const void **)&children);
+    
+    if (error != kAXErrorSuccess || !children) {
+        NSLog(@"Error: cannot get Dock children UI elements");
+        CFRelease(dockElement);
+        return false;
+    }
+    
+    for(int i = 0; i < CFArrayGetCount(children); ++i) {
+        AXUIElementRef child = (AXUIElementRef)CFArrayGetValueAtIndex(children, i);
+        CFStringRef identifier;
+        error = AXUIElementCopyAttributeValue(child, kAXIdentifierAttribute, (CFTypeRef *)&identifier);
+        
+        if (error != kAXErrorSuccess || !identifier || CFGetTypeID(identifier) != CFStringGetTypeID()) {
+            continue;
+        }
+        
+        // We can tell if Mission Control is already up if the Dock has a UI element with
+        // an AXIdentifier property of "mc". This is undocumented and therefore is liable
+        // to change, but hopefully not anytime soon!
+        if (CFStringCompare(identifier, CFSTR("mc"), 0) == kCFCompareEqualTo) {
+            (*result) = true;
+            break;
+        }
+    }
+    
+    CFRelease(children);
+    CFRelease(dockElement);
+    
+    return true;
+}
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         if (!accessibilityAvailable()) {
@@ -157,7 +210,19 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
         
+        bool alreadyInMissionControl = false;
+        
+        if (!determineIfInMissionControl(&alreadyInMissionControl)) {
+            return 1;
+        }
+        
         invokeMissionControl();
+        
+        if (alreadyInMissionControl) {
+            NSLog(@"Already in Mission Control");
+            return 0;
+        }
+        
         NSLog(@"\n\nBeginning initial wait period");
         usleep(kWiggleInitialWaitMS * NSEC_PER_USEC);
         
