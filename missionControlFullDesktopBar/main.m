@@ -1,15 +1,72 @@
 #import <Cocoa/Cocoa.h>
 
-#define kWiggleMovementEventMarker 0xDADABABACACA
-#define kFinalMovementEventMarker 0xCACABABADADA
-
-#define kWiggleDurationMS 200
-#define kWiggleRate 30
+#define kWiggleInitialWaitMS 60
+#define kWiggleDurationMS 100
+#define kWiggleRate 90
+#define kWiggleMinCount 5
 
 CFMachPortRef eventTapMachPortRef;
 CGPoint cursorStart;
 CGPoint cursorDelta = {0, 0};
-int timerCount = 0;
+NSDate *startTime = nil;
+int wiggleCount = 0;
+
+// Low level event posting, with code by George Warner
+io_connect_t getIOKitEventDriver(void)
+{
+    static  mach_port_t sEventDrvrRef = 0;
+    mach_port_t masterPort, service, iter;
+    kern_return_t    kr;
+    
+    if (!sEventDrvrRef)
+    {
+        // Get master device port
+        kr = IOMasterPort( bootstrap_port, &masterPort );
+        if (kr != KERN_SUCCESS) {
+            NSLog(@"get_event_driver() error, IOMasterPort returned error code: %d", kr);
+            return (io_connect_t)NULL;
+        }
+        
+        kr = IOServiceGetMatchingServices( masterPort, IOServiceMatching(kIOHIDSystemClass ), &iter );
+        if (kr != KERN_SUCCESS) {
+            NSLog(@"get_event_driver() error, IOServiceGetMatchingServices returned error code: %d", kr);
+            return (io_connect_t)NULL;
+        }
+        
+        service = IOIteratorNext( iter );
+        if (kr != KERN_SUCCESS) {
+            NSLog(@"get_event_driver() error, IOIteratorNext returned error code: %d", kr);
+            return (io_connect_t)NULL;
+        }
+        
+        kr = IOServiceOpen( service, mach_task_self(), kIOHIDParamConnectType, &sEventDrvrRef );
+        if (kr != KERN_SUCCESS) {
+            NSLog(@"get_event_driver() error, IOServiceOpen returned error code: %d", kr);
+            return (io_connect_t)NULL;
+        }
+        
+        IOObjectRelease( service );
+        IOObjectRelease( iter );
+    }
+    return sEventDrvrRef;
+}
+
+void moveCursor(short x, short y)
+{
+    NXEventData event;
+    IOGPoint pos = {x, y};
+    kern_return_t err;
+    
+    bzero(&event, sizeof(NXEventData));
+    
+    IOOptionBits options = kIOHIDSetCursorPosition;
+    err = IOHIDPostEvent(getIOKitEventDriver(), NX_MOUSEMOVED, pos, &event, kNXEventDataVersion, 0, options);
+    
+    if (err != KERN_SUCCESS) {
+        NSLog(@"Warning: Failed to post mouse event. Error: %d", err);
+    }
+}
+
 
 CGPoint currentMouseLocation()
 {
@@ -25,46 +82,13 @@ CGPoint currentMouseLocation()
     return loc;
 }
 
-void moveCursor(double x, double y, int64_t eventMaker)
+void wiggleCursor()
 {
-    CGEventRef event = CGEventCreateMouseEvent(NULL, kCGEventMouseMoved, CGPointMake(x, y), 0);
-    
-    if (!event) {
-        fprintf(stderr, "Error: could not create mouse event\n");
-        return;
-    }
-    
-    CGEventSetIntegerValueField(event, kCGEventSourceUserData, eventMaker);
-    CGPoint prevMouseLocation = currentMouseLocation();
-    // Mouse location can be a decimal value, so for this calculation to work correctly we have to round to the nearest integer:
-    CGEventSetIntegerValueField(event, kCGMouseEventDeltaX, x-round(prevMouseLocation.x));
-    CGEventSetIntegerValueField(event, kCGMouseEventDeltaY, y-round(prevMouseLocation.y));
-    CGEventPost(kCGSessionEventTap, event);
-    CFRelease(event);
-}
-
-void moveCursorTimerCallback()
-{
-    ++timerCount;
-    
-    if (timerCount < (kWiggleDurationMS*kWiggleRate/1000)) {
-        moveCursor(timerCount%2, 0, kWiggleMovementEventMarker);
-    }
-    
-    if (timerCount == (kWiggleDurationMS*kWiggleRate/1000)) {
-        moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y, kFinalMovementEventMarker);
-    }
-    
-    if (timerCount > (kWiggleDurationMS*kWiggleRate/1000*2)) {
-        printf("NB: failsafe\n");
-        CFRunLoopStop(CFRunLoopGetCurrent());
-    }
+    moveCursor(wiggleCount%2+1, 1);
 }
 
 CGEventRef eventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *data)
 {
-    static int64_t accumulatedFakeDeltaX = 0, accumulatedFakeDeltaY = 0;
-    
     // Event taps can occasionally be disabled if they block for too long.  This will probably never happen, but
     // just in case it does, we want to do this:
     if (type == kCGEventTapDisabledByTimeout) {
@@ -72,27 +96,42 @@ CGEventRef eventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef 
         return event;
     }
     
-    int64_t eventUserData = CGEventGetIntegerValueField(event, kCGEventSourceUserData);
-    CGPoint *cursorDelta = (CGPoint *)data;
+    CGPoint location = CGEventGetLocation(event);
+    int64_t edx = CGEventGetIntegerValueField(event, kCGMouseEventDeltaX);
+    int64_t edy = CGEventGetIntegerValueField(event, kCGMouseEventDeltaY);
     
-    int64_t dx = CGEventGetIntegerValueField(event, kCGMouseEventDeltaX);
-    int64_t dy = CGEventGetIntegerValueField(event, kCGMouseEventDeltaY);
+    if (startTime == nil) {
+        startTime = [NSDate date];
+    }
     
-    if (eventUserData == kWiggleMovementEventMarker) {
-        //NSLog(@"Fake movement delta: %lld %lld", dx, dy);
-        accumulatedFakeDeltaX += dx;
-        accumulatedFakeDeltaY += dy;
+    double duration = -[startTime timeIntervalSinceNow] * 1000.0;
+    
+    // Artificial movement will always have no decimal component
+    if ((location.x == 1.0 && location.y == 1.0) || (location.x == 2.0 && location.y == 1.0)) {
+        NSLog(@"Received WIGGLE movement to: (%f , %f),   wiggleCount: %d     duration: %f", location.x, location.y, wiggleCount, duration);
+        ++wiggleCount;
         
-    } else if (eventUserData == kFinalMovementEventMarker) {
-        //CGPoint loc = CGEventGetLocation(event);
-        //NSLog(@"Final movement to: %f %f", loc.x, loc.y);
-        CFRunLoopStop(CFRunLoopGetCurrent());
+        if (wiggleCount < kWiggleMinCount || duration < kWiggleDurationMS) {
+            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_MSEC);//(1.0 / kWiggleRate) * NSEC_PER_SEC);
+            dispatch_after(time, dispatch_get_main_queue(), ^(void){
+            //dispatch_async(dispatch_get_main_queue(), ^(void){
+                wiggleCursor();
+            });
+            
+        } else {
+            NSLog(@"sending final movement...");
+            dispatch_async(dispatch_get_main_queue(), ^(void){
+                moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
+                CFRunLoopStop(CFRunLoopGetCurrent());
+            });
+            
+        }
         
     } else {
-        //NSLog(@"Real movement delta: %lld %lld ... total delta is now: %f %f", dx, dy, cursorDelta->x, cursorDelta->y);
-        cursorDelta->x += (dx - accumulatedFakeDeltaX);
-        cursorDelta->y += (dy - accumulatedFakeDeltaY);
-        accumulatedFakeDeltaX = accumulatedFakeDeltaY = 0;
+        NSLog(@"Received regular movement to: (%f , %f),   reported delta: (%lld,%lld)", location.x, location.y, edx, edy);
+        CGPoint *cursorDelta = (CGPoint *)data;
+        cursorDelta->x += edx;
+        cursorDelta->y += edy;
     }
     
     return event;
@@ -108,8 +147,12 @@ void invokeMissionControl()
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        invokeMissionControl();
+        NSLog(@"\n\nBeginning initial wait period");
+        usleep(kWiggleInitialWaitMS * NSEC_PER_USEC);
+        
         cursorStart = currentMouseLocation();
-        //NSLog(@"Original position: %f %f", cursorStart.x, cursorStart.y);
+        NSLog(@"Original position: %f %f", cursorStart.x, cursorStart.y);
         
         CGEventMask eventMask = (CGEventMaskBit(kCGEventLeftMouseDragged) | CGEventMaskBit(kCGEventRightMouseDragged) |
                                  CGEventMaskBit(kCGEventOtherMouseDragged) | CGEventMaskBit(kCGEventMouseMoved));
@@ -130,13 +173,8 @@ int main(int argc, const char * argv[]) {
         
         CFRunLoopAddSource(CFRunLoopGetCurrent(), eventTapRunLoopSourceRef, kCFRunLoopDefaultMode);
         
-        [NSTimer scheduledTimerWithTimeInterval:(1.0/kWiggleRate)
-                                         target:[NSBlockOperation blockOperationWithBlock:^{ moveCursorTimerCallback(); }]
-                                       selector:@selector(main)
-                                       userInfo:nil
-                                        repeats:YES];
+        wiggleCursor();
         
-        invokeMissionControl();
         CFRunLoopRun();
         
         CFRelease(eventTapRunLoopSourceRef);
