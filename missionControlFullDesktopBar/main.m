@@ -4,11 +4,13 @@
 #define kWiggleDurationMS 100
 #define kWiggleRate 90
 #define kWiggleMinCount 5
+#define kMaxRunningTimeMS 400
 
 CFMachPortRef eventTapMachPortRef;
 CGPoint cursorStart;
 CGPoint cursorDelta = {0, 0};
-NSDate *startTime = nil;
+NSDate *wiggleStartTime = nil;
+NSDate *overallStartTime = nil;
 int wiggleCount = 0;
 
 // Low level event posting, with code by George Warner
@@ -100,11 +102,11 @@ CGEventRef eventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef 
     int64_t edx = CGEventGetIntegerValueField(event, kCGMouseEventDeltaX);
     int64_t edy = CGEventGetIntegerValueField(event, kCGMouseEventDeltaY);
     
-    if (startTime == nil) {
-        startTime = [NSDate date];
+    if (wiggleStartTime == nil) {
+        wiggleStartTime = [NSDate date];
     }
     
-    double duration = -[startTime timeIntervalSinceNow] * 1000.0;
+    double duration = -[wiggleStartTime timeIntervalSinceNow] * 1000.0;
     
     // Artificial movement will always have no decimal component
     if ((location.x == 1.0 && location.y == 1.0) || (location.x == 2.0 && location.y == 1.0)) {
@@ -226,6 +228,7 @@ int main(int argc, const char * argv[]) {
         NSLog(@"\n\nBeginning initial wait period");
         usleep(kWiggleInitialWaitMS * NSEC_PER_USEC);
         
+        overallStartTime = [NSDate date];
         cursorStart = currentMouseLocation();
         NSLog(@"Original position: %f %f", cursorStart.x, cursorStart.y);
         
@@ -247,6 +250,13 @@ int main(int argc, const char * argv[]) {
         }
         
         CFRunLoopAddSource(CFRunLoopGetCurrent(), eventTapRunLoopSourceRef, kCFRunLoopDefaultMode);
+        
+        // Ensures app terminates after a specified length of time
+        [NSTimer scheduledTimerWithTimeInterval:(kMaxRunningTimeMS / 1000.0)
+                                         target:[NSBlockOperation blockOperationWithBlock:^{ CFRunLoopStop(CFRunLoopGetCurrent()); }]
+                                       selector:@selector(main)
+                                       userInfo:nil
+                                        repeats:NO];
         
         wiggleCursor();
         
