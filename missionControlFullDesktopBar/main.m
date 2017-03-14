@@ -189,10 +189,8 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
 
 void invokeMissionControl()
 {
-    NSString *path = [[NSWorkspace sharedWorkspace] absolutePathForAppBundleWithIdentifier:@"com.apple.exposelauncher"];
-    NSBundle *bundle = [NSBundle bundleWithPath:path];
-    NSString *executablePath = [bundle executablePath];
-    [NSTask launchedTaskWithLaunchPath:executablePath arguments:@[]];
+    extern int CoreDockSendNotification(CFStringRef);
+    CoreDockSendNotification(CFSTR("com.apple.expose.awake"));
     lastMissionControlInvocationTime = [NSDate date];
 }
 
