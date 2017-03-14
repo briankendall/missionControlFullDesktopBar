@@ -24,7 +24,6 @@
 		77AF26071E77B1B600CF110E /* app.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = app.m; sourceTree = "<group>"; };
 		77AF26091E77B29400CF110E /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app.h; sourceTree = "<group>"; };
 		77AF260A1E78614700CF110E /* commandLineArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = commandLineArguments.m; sourceTree = "<group>"; };
-		77AF260D1E78615A00CF110E /* commandLineArguments.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = commandLineArguments.h; path = ../commandLineArguments.h; sourceTree = "<group>"; };
 		77AF260E1E7891AD00CF110E /* dragMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = dragMethod.m; sourceTree = "<group>"; };
 		77AF26101E7891DE00CF110E /* dragMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dragMethod.h; sourceTree = "<group>"; };
 		77AF26111E78928200CF110E /* events.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = events.h; sourceTree = "<group>"; };
@@ -32,6 +31,7 @@
 		77AF26141E78942F00CF110E /* CGSPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CGSPrivate.h; sourceTree = "<group>"; };
 		77AF26151E78972C00CF110E /* invisibleWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = invisibleWindow.m; sourceTree = "<group>"; };
 		77AF26171E78973400CF110E /* invisibleWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invisibleWindow.h; sourceTree = "<group>"; };
+		77AF26181E78A13F00CF110E /* commandLineArguments.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = commandLineArguments.h; sourceTree = "<group>"; };
 		77B4B4401E3952E2006263EE /* missionControlFullDesktopBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = missionControlFullDesktopBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77B4B4471E3952E2006263EE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		77B4B44E1E3952E2006263EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -77,7 +77,7 @@
 				77AF26071E77B1B600CF110E /* app.m */,
 				77AF26141E78942F00CF110E /* CGSPrivate.h */,
 				77AF260A1E78614700CF110E /* commandLineArguments.m */,
-				77AF260D1E78615A00CF110E /* commandLineArguments.h */,
+				77AF26181E78A13F00CF110E /* commandLineArguments.h */,
 				77AF260E1E7891AD00CF110E /* dragMethod.m */,
 				77AF26101E7891DE00CF110E /* dragMethod.h */,
 				77AF26121E78928C00CF110E /* events.m */,
