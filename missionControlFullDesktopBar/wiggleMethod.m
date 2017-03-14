@@ -1,11 +1,6 @@
 #import <Cocoa/Cocoa.h>
+#import "wiggleMethod.h"
 #import "app.h"
-
-#define kWiggleInitialWaitMS 60
-#define kWiggleDurationMS 120
-#define kTimeBetweenWiggleEventsMS 5
-#define kMaxRunningTimeMS 400
-#define kWiggleMinCount 5
 
 CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *data);
 
@@ -14,6 +9,7 @@ static CFRunLoopSourceRef eventTapRunLoopSourceRef = NULL;
 static CGPoint cursorStart;
 static CGPoint cursorDelta = {0, 0};
 static NSDate *wiggleStartTime = nil;
+static int wiggleDuration = kWiggleDefaultDurationMS;
 static int wiggleCount = 0;
 static NSTimer *appStopTimer = nil;
 
@@ -186,7 +182,7 @@ void processWiggleEventAndPostNext(CGEventRef event)
     printf("Received WIGGLE movement to: (%f , %f),   wiggleCount: %d     duration: %f\n",
            location.x, location.y, wiggleCount, durationMS);
     
-    if (wiggleCount < kWiggleMinCount || durationMS < kWiggleDurationMS) {
+    if (wiggleCount < kWiggleMinCount || durationMS < wiggleDuration) {
         // Keep on wiggling...
         // Waiting a little bit of time between receiving an event and posting it just so that
         // we don't flood the system with artificial mouse events
@@ -253,7 +249,7 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
     return event;
 }
 
-void showMissionControlWithFullDesktopBarUsingWiggleMethod()
+void showMissionControlWithFullDesktopBarUsingWiggleMethod(int inWiggleDuration)
 {
     bool alreadyInMissionControl = false;
     
@@ -270,6 +266,7 @@ void showMissionControlWithFullDesktopBarUsingWiggleMethod()
         return;
     }
     
+    wiggleDuration = inWiggleDuration;
     wiggleStartTime = nil;
     wiggleCount = 0;
     cursorDelta = CGPointMake(0, 0);
@@ -286,7 +283,7 @@ void showMissionControlWithFullDesktopBarUsingWiggleMethod()
             return;
         }
         
-        ensureAppStopsAfterDuration(kMaxRunningTimeMS);
+        ensureAppStopsAfterDuration(kMaxRunningTimeBufferMS + wiggleDuration);
         wiggleCursor();
     }]
                                    selector:@selector(main)

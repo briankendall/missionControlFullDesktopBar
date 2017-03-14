@@ -79,6 +79,17 @@ void releaseMissionControl()
     }
 }
 
+void showMissionControlWithFullDesktopBar(CommandLineArgs *args)
+{
+    if (args->release) {
+        releaseMissionControl();
+    } else if (args->method == kMethodWiggle) {
+        showMissionControlWithFullDesktopBarUsingWiggleMethod(args->wiggleDuration);
+    } else {
+        cleanUpAndFinish();
+    }
+}
+
 void cleanUpAndFinish()
 {
     printf("Cleaning up\n");
@@ -102,14 +113,33 @@ void cleanUpAndFinish()
     }
 }
 
-static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID, CFDataRef data, void *info)
+bool signalDaemon(CommandLineArgs *args)
 {
-    if (messageID == kMessageMissionControlTriggerPressed) {
-        showMissionControlWithFullDesktopBarUsingWiggleMethod();
-    } else if (messageID == kMessageMissionControlTriggerReleased) {
-        releaseMissionControl();
+    CFMessagePortRef remotePort = CFMessagePortCreateRemote(nil,
+                                                            CFSTR("net.briankendall.missionControlFullDesktopBar"));
+    
+    if (!remotePort) {
+        return false;
     }
     
+    CFTimeInterval timeout = 3.0;
+    CFDataRef data = CFDataCreate(NULL, (UInt8 *)args, sizeof(*args));
+    SInt32 status = CFMessagePortSendRequest(remotePort, 0, data, timeout, timeout, nil, nil);
+    
+    if (status != kCFMessagePortSuccess) {
+        fprintf(stderr, "Failed to signal daemon\n");
+    }
+    
+    CFRelease(data);
+    CFRelease(remotePort);
+    return true;
+}
+
+static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID, CFDataRef data, void *info)
+{
+    CommandLineArgs args;
+    CFDataGetBytes(data, CFRangeMake(0, sizeof(args)), (UInt8 *)&args);
+    showMissionControlWithFullDesktopBar(&args);
     return NULL;
 }
 

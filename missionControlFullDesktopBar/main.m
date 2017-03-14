@@ -1,6 +1,8 @@
 #import <Cocoa/Cocoa.h>
 #import "app.h"
 #import "processes.h"
+#import "commandLineArguments.h"
+#import "wiggleMethod.h"
 
 bool accessibilityAvailable()
 {
@@ -20,34 +22,16 @@ bool appIsAlreadyRunning()
     return (error == kSuccess && matches > 1);
 }
 
-bool hasArg(int argc, const char * argv[], const char *arg)
+int main(int argc, const char *argv[])
 {
-    for(int i = 0; i < argc; ++i) {
-        if (strcmp(argv[i], arg) == 0) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        CFMessagePortRef remotePort = CFMessagePortCreateRemote(nil,
-                                                                CFSTR("net.briankendall.missionControlFullDesktopBar"));
+        CommandLineArgs args;
         
-        if (remotePort) {
-            CFTimeInterval timeout = 3.0;
-            int message = ((hasArg(argc, argv, "-r") || hasArg(argc, argv, "--release"))
-                           ? kMessageMissionControlTriggerReleased : kMessageMissionControlTriggerPressed);
-            SInt32 status = CFMessagePortSendRequest(remotePort, message, nil, timeout, timeout, nil, nil);
-            
-            if (status != kCFMessagePortSuccess) {
-                fprintf(stderr, "Failed to signal daemon\n");
-                return 1;
-            }
-            
-            CFRelease(remotePort);
+        if (!parseCommandLineArgs(&args, argc, argv)) {
+            return 1;
+        }
+        
+        if (signalDaemon(&args)) {
             return 0;
         }
         
@@ -56,14 +40,18 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
         
-        if (hasArg(argc, argv, "-d") || hasArg(argc, argv, "--daemon")) {
+        if (args.daemon && !args.daemonized) {
             if (fork() == 0) {
                 printf("Running as daemon\n");
-                const char *args[3];
-                args[0] = argv[0];
-                args[1] = "--daemonized";
-                args[2] = NULL;
-                execve(args[0], (char * const *)args, NULL);
+                const char *newArgs[argc+2];
+                
+                for(int i = 0; i < argc; ++i) {
+                    newArgs[i] = argv[i];
+                }
+                
+                newArgs[argc] = "--daemonized";
+                newArgs[argc+1] = NULL;
+                execve(newArgs[0], (char * const *)newArgs, NULL);
             } else {
                 return 0;
             }
@@ -71,7 +59,7 @@ int main(int argc, const char * argv[]) {
         
         NSApplicationLoad();
         
-        if (hasArg(argc, argv, "--daemonized")) {
+        if (args.daemonized) {
             setupDaemon();
             
         } else if (appIsAlreadyRunning()) {
@@ -81,7 +69,7 @@ int main(int argc, const char * argv[]) {
             return 0;
         }
         
-        showMissionControlWithFullDesktopBarUsingWiggleMethod();
+        showMissionControlWithFullDesktopBar(&args);
         
         return NSApplicationMain(argc, argv);;
     }
