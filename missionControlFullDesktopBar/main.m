@@ -2,17 +2,29 @@
 #import "processes.h"
 
 #define kWiggleInitialWaitMS 60
-#define kWiggleDurationMS 100
+#define kWiggleDurationMS 120
 #define kTimeBetweenWiggleEventsMS 5
 #define kMaxRunningTimeMS 400
 #define kWiggleMinCount 5
 
+#define kMessageMissionControlTriggerPressed 1
+#define kMessageMissionControlTriggerReleased 2
+
+void stopEventTap();
+void removeAppStopTimer();
+void cleanUpAndFinish();
+
+static bool daemonized = false;
 CFMachPortRef eventTapMachPortRef = NULL;
 CFRunLoopSourceRef eventTapRunLoopSourceRef = NULL;
 CGPoint cursorStart;
 CGPoint cursorDelta = {0, 0};
 NSDate *wiggleStartTime = nil;
 int wiggleCount = 0;
+NSDate *lastMissionControlInvocationTime = nil;
+NSTimer *appStopTimer = nil;
+CFMessagePortRef localPort = nil;
+CFRunLoopSourceRef localPortRunLoopSource = nil;
 
 // Low level event posting, with code by George Warner
 io_connect_t getIOKitEventDriver(void)
@@ -105,7 +117,8 @@ void processWiggleEventAndPostNext(CGEventRef event)
     ++wiggleCount;
     
     CGPoint location = CGEventGetLocation(event);
-    NSLog(@"Received WIGGLE movement to: (%f , %f),   wiggleCount: %d     duration: %f", location.x, location.y, wiggleCount, durationMS);
+    printf("Received WIGGLE movement to: (%f , %f),   wiggleCount: %d     duration: %f\n",
+           location.x, location.y, wiggleCount, durationMS);
     
     if (wiggleCount < kWiggleMinCount || durationMS < kWiggleDurationMS) {
         // Keep on wiggling...
@@ -120,10 +133,13 @@ void processWiggleEventAndPostNext(CGEventRef event)
         // We now move the cursor to its original position plus the accumulated deltas
         // of all of the naturally occurring mouse events that we've observed, so that
         // the cursor ends up where the user expects it to be:
-        NSLog(@"sending final movement...");
+        printf("sending final movement...\n");
         dispatch_async(dispatch_get_main_queue(), ^(void){
+            stopEventTap();
+            // Need to call this after stopEventTap() so that this event doesn't get snagged by the
+            // event tap
             moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
-            CFRunLoopStop(CFRunLoopGetCurrent());
+            cleanUpAndFinish();
         });
         
     }
@@ -145,7 +161,7 @@ void accumulateNaturalMouseMovement(CGEventRef event)
     cursorDelta.y += dy;
     
     CGPoint location = CGEventGetLocation(event);
-    NSLog(@"Received regular movement to: (%f , %f),   reported delta: (%lld,%lld)", location.x, location.y, dx, dy);
+    printf("Received regular movement to: (%f , %f),   reported delta: (%lld,%lld)\n", location.x, location.y, dx, dy);
 }
 
 CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *data)
@@ -154,6 +170,11 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
     // just in case it does, we want to do this:
     if (type == kCGEventTapDisabledByTimeout) {
         CGEventTapEnable(eventTapMachPortRef, true);
+        return event;
+    }
+    
+    if (type == kCGEventTapDisabledByUserInput) {
+        // We intentionall disabled the event tap
         return event;
     }
     
@@ -172,6 +193,7 @@ void invokeMissionControl()
     NSBundle *bundle = [NSBundle bundleWithPath:path];
     NSString *executablePath = [bundle executablePath];
     [NSTask launchedTaskWithLaunchPath:executablePath arguments:@[]];
+    lastMissionControlInvocationTime = [NSDate date];
 }
 
 bool accessibilityAvailable()
@@ -249,8 +271,9 @@ bool createEventTap()
 {
     CGEventMask eventMask = (CGEventMaskBit(kCGEventLeftMouseDragged) | CGEventMaskBit(kCGEventRightMouseDragged) |
                              CGEventMaskBit(kCGEventOtherMouseDragged) | CGEventMaskBit(kCGEventMouseMoved));
-    CFMachPortRef eventTapMachPortRef = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
-                                                         eventMask, (CGEventTapCallBack)mouseMovementEventTapFunction, NULL);
+    
+    eventTapMachPortRef = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
+                                           eventMask, (CGEventTapCallBack)mouseMovementEventTapFunction, NULL);
     
     if (!eventTapMachPortRef) {
         NSLog(@"Error: could not create event tap");
@@ -265,27 +288,155 @@ bool createEventTap()
     }
     
     CFRunLoopAddSource(CFRunLoopGetCurrent(), eventTapRunLoopSourceRef, kCFRunLoopDefaultMode);
+    
     return true;
+}
+
+bool startEventTap()
+{
+    if (eventTapMachPortRef && eventTapRunLoopSourceRef) {
+        CGEventTapEnable(eventTapMachPortRef, true);
+        return true;
+    } else {
+        return createEventTap();
+    }
+}
+
+void stopEventTap()
+{
+    if (eventTapMachPortRef) {
+        CGEventTapEnable(eventTapMachPortRef, false);
+    }
 }
 
 void destroyEventTap()
 {
     if (eventTapRunLoopSourceRef) {
         CFRelease(eventTapRunLoopSourceRef);
+        eventTapRunLoopSourceRef = NULL;
     }
     
     if (eventTapMachPortRef) {
         CFRelease(eventTapMachPortRef);
+        eventTapMachPortRef = NULL;
     }
 }
 
-void ensureAppQuitsAfterDuration(double durationMS)
+void ensureAppStopsAfterDuration(double durationMS)
 {
-    [NSTimer scheduledTimerWithTimeInterval:(durationMS / 1000.0)
-                                     target:[NSBlockOperation blockOperationWithBlock:^{ CFRunLoopStop(CFRunLoopGetCurrent()); }]
+    removeAppStopTimer();
+    appStopTimer = [NSTimer scheduledTimerWithTimeInterval:(durationMS / 1000.0)
+                                     target:[NSBlockOperation blockOperationWithBlock:^{ cleanUpAndFinish(); }]
                                    selector:@selector(main)
                                    userInfo:nil
                                     repeats:NO];
+}
+
+void removeAppStopTimer()
+{
+    if (appStopTimer && [appStopTimer isValid]) {
+        [appStopTimer invalidate];
+        appStopTimer = nil;
+    }
+}
+
+void cleanUpAndFinish()
+{
+    printf("Cleaning up\n");
+    removeAppStopTimer();
+    stopEventTap();
+    
+    if (!daemonized) {
+        printf("Shutting down\n");
+        destroyEventTap();
+        
+        if (localPortRunLoopSource) {
+            CFRelease(localPortRunLoopSource);
+            localPortRunLoopSource = nil;
+        }
+        
+        if (localPort) {
+            CFRelease(localPort);
+            localPort = nil;
+        }
+        
+        [NSApp terminate:0];
+    }
+}
+
+void showMissionControlWithFullDesktopBar()
+{
+    bool alreadyInMissionControl = false;
+    
+    if (!determineIfInMissionControl(&alreadyInMissionControl)) {
+        return;
+    }
+    
+    invokeMissionControl();
+    
+    if (alreadyInMissionControl) {
+        // No need to do any cursor wiggling if we're already in Mission
+        // Control, so in that case we can just quit here.
+        printf("Already in Mission Control\n");
+        return;
+    }
+    
+    wiggleStartTime = nil;
+    wiggleCount = 0;
+    cursorDelta = CGPointMake(0, 0);
+    
+    printf("\n\nBeginning initial wait period\n");
+    
+    [NSTimer scheduledTimerWithTimeInterval:(kWiggleInitialWaitMS / 1000.0)
+                                     target:[NSBlockOperation blockOperationWithBlock:^{
+        
+        cursorStart = currentMouseLocation();
+        printf("Original position: %f %f\n", cursorStart.x, cursorStart.y);
+        
+        if (!startEventTap()) {
+            return;
+        }
+        
+        ensureAppStopsAfterDuration(kMaxRunningTimeMS);
+        wiggleCursor();
+    }]
+                                   selector:@selector(main)
+                                   userInfo:nil
+                                    repeats:NO];
+}
+
+void releaseMissionControl()
+{
+    double timeSince = -[lastMissionControlInvocationTime timeIntervalSinceNow];
+    bool alreadyInMissionControl = false;
+    determineIfInMissionControl(&alreadyInMissionControl);
+    
+    if (timeSince > 0.5 && alreadyInMissionControl) {
+        printf("Released mission control trigger when in mission control after adequate time!\n");
+        invokeMissionControl();
+    }
+}
+
+bool hasArg(int argc, const char * argv[], const char *arg)
+{
+    for(int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], arg) == 0) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID, CFDataRef data, void *info)
+{
+    if (messageID == kMessageMissionControlTriggerPressed) {
+        showMissionControlWithFullDesktopBar();
+    } else if (messageID == kMessageMissionControlTriggerReleased) {
+        releaseMissionControl();
+    }
+    
+    return NULL;
 }
 
 int main(int argc, const char * argv[]) {
@@ -295,44 +446,55 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
         
-        bool alreadyInMissionControl = false;
+        CFMessagePortRef remotePort = CFMessagePortCreateRemote(nil,
+                                                                CFSTR("net.briankendall.missionControlFullDesktopBar"));
         
-        if (!determineIfInMissionControl(&alreadyInMissionControl)) {
-            return 1;
+        if (remotePort) {
+            CFTimeInterval timeout = 3.0;
+            int message = ((hasArg(argc, argv, "-r") || hasArg(argc, argv, "--release"))
+                           ? kMessageMissionControlTriggerReleased : kMessageMissionControlTriggerPressed);
+            SInt32 status = CFMessagePortSendRequest(remotePort, message, nil, timeout, timeout, nil, nil);
+            
+            if (status != kCFMessagePortSuccess) {
+                fprintf(stderr, "Failed to signal daemon\n");
+                return 1;
+            }
+            
+            CFRelease(remotePort);
+            return 0;
         }
         
-        invokeMissionControl();
+        if (hasArg(argc, argv, "-d") || hasArg(argc, argv, "--daemon")) {
+            if (fork() == 0) {
+                printf("Running as daemon\n");
+                const char *args[3];
+                args[0] = argv[0];
+                args[1] = "--daemonized";
+                args[2] = NULL;
+                execve(args[0], (char * const *)args, NULL);
+            } else {
+                return 0;
+            }
+        }
         
-        if (appIsAlreadyRunning()) {
+        NSApplicationLoad();
+        
+        if (hasArg(argc, argv, "--daemonized")) {
+            daemonized = true;
+            localPort = CFMessagePortCreateLocal(nil, CFSTR("net.briankendall.missionControlFullDesktopBar"),
+                                                 receivedMessageAsDaemon, nil, nil);
+            CFRunLoopSourceRef localPortRunLoopSource = CFMessagePortCreateRunLoopSource(nil, localPort, 0);
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), localPortRunLoopSource, kCFRunLoopCommonModes);
+            
+        } else if (appIsAlreadyRunning()) {
             // Don't want to interfere with an already running instance of this
             // app, so we just invoke Mission Control and quit
             NSLog(@"Already running");
             return 0;
         }
         
-        if (alreadyInMissionControl) {
-            // No need to do any cursor wiggling if we're already in Mission
-            // Control, so in that case we can just quit here.
-            NSLog(@"Already in Mission Control");
-            return 0;
-        }
+        showMissionControlWithFullDesktopBar();
         
-        NSLog(@"\n\nBeginning initial wait period");
-        usleep(kWiggleInitialWaitMS * NSEC_PER_USEC);
-        
-        cursorStart = currentMouseLocation();
-        NSLog(@"Original position: %f %f", cursorStart.x, cursorStart.y);
-        
-        if (!createEventTap()) {
-            return 1;
-        }
-        
-        ensureAppQuitsAfterDuration(kMaxRunningTimeMS);
-        wiggleCursor();
-        
-        CFRunLoopRun();
-        
-        destroyEventTap();
+        return NSApplicationMain(argc, argv);;
     }
-    return 0;
 }
