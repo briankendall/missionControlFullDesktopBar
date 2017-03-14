@@ -151,3 +151,21 @@ void setupDaemon()
     CFRunLoopSourceRef localPortRunLoopSource = CFMessagePortCreateRunLoopSource(nil, localPort, 0);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), localPortRunLoopSource, kCFRunLoopCommonModes);
 }
+
+void becomeDaemon(int argc, const char *argv[])
+{
+    if (fork() == 0) {
+        printf("Running as daemon\n");
+        const char *newArgs[argc+2];
+        
+        for(int i = 0; i < argc; ++i) {
+            newArgs[i] = argv[i];
+        }
+        
+        newArgs[argc] = "--daemonized";
+        newArgs[argc+1] = NULL;
+        execve(newArgs[0], (char * const *)newArgs, NULL);
+    }
+}
+
+

@@ -13,5 +13,6 @@ void showMissionControlWithFullDesktopBar(CommandLineArgs *args);
 void cleanUpAndFinish();
 bool signalDaemon(CommandLineArgs *args);
 void setupDaemon();
+void becomeDaemon(int argc, const char *argv[]);
 
 #endif /* app_h */

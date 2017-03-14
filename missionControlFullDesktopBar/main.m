@@ -41,20 +41,8 @@ int main(int argc, const char *argv[])
         }
         
         if (args.daemon && !args.daemonized) {
-            if (fork() == 0) {
-                printf("Running as daemon\n");
-                const char *newArgs[argc+2];
-                
-                for(int i = 0; i < argc; ++i) {
-                    newArgs[i] = argv[i];
-                }
-                
-                newArgs[argc] = "--daemonized";
-                newArgs[argc+1] = NULL;
-                execve(newArgs[0], (char * const *)newArgs, NULL);
-            } else {
-                return 0;
-            }
+            becomeDaemon(argc, argv);
+            return 0;
         }
         
         NSApplicationLoad();
@@ -66,6 +54,7 @@ int main(int argc, const char *argv[])
             // Don't want to interfere with an already running instance of this
             // app, so we just invoke Mission Control and quit
             NSLog(@"Already running");
+            invokeMissionControl();
             return 0;
         }
         
