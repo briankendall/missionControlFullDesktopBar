@@ -1,0 +1,123 @@
+#import <Cocoa/Cocoa.h>
+#import "app.h"
+#import "wiggleMethod.h"
+
+static bool daemonized = false;
+static CFMessagePortRef localPort = nil;
+static CFRunLoopSourceRef localPortRunLoopSource = nil;
+static NSDate *lastMissionControlInvocationTime = nil;
+
+// Sets the memory result points to to true if Mission Control is up. Returns true if able to
+// successfully determine the state of Mission Control, false if an error occurred.
+bool determineIfInMissionControl(bool *result)
+{
+    (*result) = false;
+    NSArray *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"];
+    
+    if (apps.count == 0) {
+        NSLog(@"Error: Dock is not running!");
+        return false;
+    }
+    
+    NSRunningApplication *dock = apps[0];
+    AXUIElementRef dockElement = AXUIElementCreateApplication(dock.processIdentifier);
+    
+    if (!dockElement) {
+        NSLog(@"Error: cannot create AXUIElementRef for Dock");
+        return false;
+    }
+    
+    CFArrayRef children = NULL;
+    AXError error = AXUIElementCopyAttributeValue(dockElement, kAXChildrenAttribute, (const void **)&children);
+    
+    if (error != kAXErrorSuccess || !children) {
+        NSLog(@"Error: cannot get Dock children UI elements");
+        CFRelease(dockElement);
+        return false;
+    }
+    
+    for(int i = 0; i < CFArrayGetCount(children); ++i) {
+        AXUIElementRef child = (AXUIElementRef)CFArrayGetValueAtIndex(children, i);
+        CFStringRef identifier;
+        error = AXUIElementCopyAttributeValue(child, kAXIdentifierAttribute, (CFTypeRef *)&identifier);
+        
+        if (error != kAXErrorSuccess || !identifier || CFGetTypeID(identifier) != CFStringGetTypeID()) {
+            continue;
+        }
+        
+        // We can tell if Mission Control is already up if the Dock has a UI element with
+        // an AXIdentifier property of "mc". This is undocumented and therefore is liable
+        // to change, but hopefully not anytime soon!
+        if (CFStringCompare(identifier, CFSTR("mc"), 0) == kCFCompareEqualTo) {
+            (*result) = true;
+            break;
+        }
+    }
+    
+    CFRelease(children);
+    CFRelease(dockElement);
+    
+    return true;
+}
+
+void invokeMissionControl()
+{
+    extern int CoreDockSendNotification(CFStringRef);
+    CoreDockSendNotification(CFSTR("com.apple.expose.awake"));
+    lastMissionControlInvocationTime = [NSDate date];
+}
+
+void releaseMissionControl()
+{
+    double timeSince = -[lastMissionControlInvocationTime timeIntervalSinceNow];
+    bool alreadyInMissionControl = false;
+    determineIfInMissionControl(&alreadyInMissionControl);
+    
+    if (timeSince > 0.5 && alreadyInMissionControl) {
+        printf("Released mission control trigger when in mission control after adequate time!\n");
+        invokeMissionControl();
+    }
+}
+
+void cleanUpAndFinish()
+{
+    printf("Cleaning up\n");
+    wiggleMethodCleanUp();
+    
+    if (!daemonized) {
+        printf("Shutting down\n");
+        wiggleMethodShutDown();
+        
+        if (localPortRunLoopSource) {
+            CFRelease(localPortRunLoopSource);
+            localPortRunLoopSource = nil;
+        }
+        
+        if (localPort) {
+            CFRelease(localPort);
+            localPort = nil;
+        }
+        
+        [NSApp terminate:0];
+    }
+}
+
+static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID, CFDataRef data, void *info)
+{
+    if (messageID == kMessageMissionControlTriggerPressed) {
+        showMissionControlWithFullDesktopBarUsingWiggleMethod();
+    } else if (messageID == kMessageMissionControlTriggerReleased) {
+        releaseMissionControl();
+    }
+    
+    return NULL;
+}
+
+void setupDaemon()
+{
+    daemonized = true;
+    localPort = CFMessagePortCreateLocal(nil, CFSTR("net.briankendall.missionControlFullDesktopBar"),
+                                         receivedMessageAsDaemon, nil, nil);
+    CFRunLoopSourceRef localPortRunLoopSource = CFMessagePortCreateRunLoopSource(nil, localPort, 0);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), localPortRunLoopSource, kCFRunLoopCommonModes);
+}

@@ -7,12 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		77AF26051E77AF8900CF110E /* wiggleMethod.m in Sources */ = {isa = PBXBuildFile; fileRef = 77AF26041E77AF8900CF110E /* wiggleMethod.m */; };
+		77AF26081E77B1B600CF110E /* app.m in Sources */ = {isa = PBXBuildFile; fileRef = 77AF26071E77B1B600CF110E /* app.m */; };
 		77B4B4481E3952E2006263EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4471E3952E2006263EE /* main.m */; };
 		77B4B4551E3953CE006263EE /* Expose.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77B4B4541E3953CE006263EE /* Expose.icns */; };
 		77B4B4571E395F9B006263EE /* processes.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4561E395F9B006263EE /* processes.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		77AF26041E77AF8900CF110E /* wiggleMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = wiggleMethod.m; sourceTree = "<group>"; };
+		77AF26061E77AF9F00CF110E /* wiggleMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wiggleMethod.h; sourceTree = "<group>"; };
+		77AF26071E77B1B600CF110E /* app.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = app.m; sourceTree = "<group>"; };
+		77AF26091E77B29400CF110E /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app.h; sourceTree = "<group>"; };
 		77B4B4401E3952E2006263EE /* missionControlFullDesktopBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = missionControlFullDesktopBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77B4B4471E3952E2006263EE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		77B4B44E1E3952E2006263EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -54,6 +60,10 @@
 				77B4B44E1E3952E2006263EE /* Info.plist */,
 				77B4B4541E3953CE006263EE /* Expose.icns */,
 				77B4B4471E3952E2006263EE /* main.m */,
+				77AF26091E77B29400CF110E /* app.h */,
+				77AF26071E77B1B600CF110E /* app.m */,
+				77AF26041E77AF8900CF110E /* wiggleMethod.m */,
+				77AF26061E77AF9F00CF110E /* wiggleMethod.h */,
 				77B4B4561E395F9B006263EE /* processes.m */,
 				77B4B4581E39607F006263EE /* processes.h */,
 			);
@@ -132,6 +142,8 @@
 			files = (
 				77B4B4481E3952E2006263EE /* main.m in Sources */,
 				77B4B4571E395F9B006263EE /* processes.m in Sources */,
+				77AF26081E77B1B600CF110E /* app.m in Sources */,
+				77AF26051E77AF8900CF110E /* wiggleMethod.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
