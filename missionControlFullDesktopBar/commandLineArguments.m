@@ -112,7 +112,7 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("  -w, --wiggle-duration <duration>  When wiggle method is used, specifies how\n");
         printf("                                    many milliseconds the wiggle will last. Max\n");
         printf("                                    value is 1000. Defaults to %d.\n", kWiggleDefaultDurationMS);
-        printf("  -d, --internal-drag               When drag method is used, uses faster and\n");
+        printf("  -i, --internal-drag               When drag method is used, uses faster and\n");
         printf("                                    more reliable internal drag that does not\n");
         printf("                                    involve creating a system-wide mouse event,\n");
         printf("                                    though it *may* create weird side effects.\n");
