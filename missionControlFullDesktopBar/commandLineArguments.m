@@ -104,7 +104,7 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("                                    if this option is used within 500 ms of\n");
         printf("                                    invoking Mission Control, will uninvoke\n");
         printf("                                    Mission Control, otherwise nothing happens.\n");
-        printf("                                    Only has an effect when used on a daemon.\n");
+        printf("                                    Only has an effect when used with a daemon.\n");
         printf("                                    process. All other options have no effect\n");
         printf("                                    when used with -r / --release.\n");
         printf("  -m, --method <wiggle/drag>        Selects the method to use. Current options\n");
@@ -116,6 +116,8 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("                                    more reliable internal drag that does not\n");
         printf("                                    involve creating a system-wide mouse event,\n");
         printf("                                    though it *may* create weird side effects.\n");
+        printf("                                    Has no effect unless used with a daemon\n");
+        printf("                                    process.\n");
         printf("  -h, --help                        Displays this help message\n");
         printf("  -v, --version                     Displays program version\n");
         return false;

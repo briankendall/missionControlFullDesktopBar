@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import "app.h"
 #import "wiggleMethod.h"
+#import "dragMethod.h"
 
 static bool daemonized = false;
 static CFMessagePortRef localPort = nil;
@@ -88,6 +89,8 @@ void showMissionControlWithFullDesktopBar(CommandLineArgs *args)
         releaseMissionControl();
     } else if (args->method == kMethodWiggle) {
         showMissionControlWithFullDesktopBarUsingWiggleMethod(args->wiggleDuration);
+    } else if (args->method == kMethodDrag) {
+        showMissionControlWithFullDesktopBarUsingDragMethod(args->internalMouseDown);
     } else {
         cleanUpAndFinish();
     }
@@ -97,10 +100,12 @@ void cleanUpAndFinish()
 {
     printf("Cleaning up\n");
     wiggleMethodCleanUp();
+    dragMethodCleanUp();
     
     if (!daemonized) {
         printf("Shutting down\n");
         wiggleMethodShutDown();
+        dragMethodShutDown();
         
         if (localPortRunLoopSource) {
             CFRelease(localPortRunLoopSource);

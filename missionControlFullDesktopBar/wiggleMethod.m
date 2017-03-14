@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import "wiggleMethod.h"
 #import "app.h"
+#import "events.h"
 
 CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *data);
 
@@ -15,76 +16,6 @@ static int wiggleCount = 0;
 static NSTimer *appStopTimer = nil;
 static NSTimer *wiggleStepTimer = nil;
 
-// Low level event posting, with code by George Warner
-io_connect_t getIOKitEventDriver(void)
-{
-    static  mach_port_t sEventDrvrRef = 0;
-    mach_port_t masterPort, service, iter;
-    kern_return_t    kr;
-    
-    if (!sEventDrvrRef)
-    {
-        // Get master device port
-        kr = IOMasterPort( bootstrap_port, &masterPort );
-        if (kr != KERN_SUCCESS) {
-            NSLog(@"get_event_driver() error, IOMasterPort returned error code: %d", kr);
-            return (io_connect_t)NULL;
-        }
-        
-        kr = IOServiceGetMatchingServices( masterPort, IOServiceMatching(kIOHIDSystemClass ), &iter );
-        if (kr != KERN_SUCCESS) {
-            NSLog(@"get_event_driver() error, IOServiceGetMatchingServices returned error code: %d", kr);
-            return (io_connect_t)NULL;
-        }
-        
-        service = IOIteratorNext( iter );
-        if (kr != KERN_SUCCESS) {
-            NSLog(@"get_event_driver() error, IOIteratorNext returned error code: %d", kr);
-            return (io_connect_t)NULL;
-        }
-        
-        kr = IOServiceOpen( service, mach_task_self(), kIOHIDParamConnectType, &sEventDrvrRef );
-        if (kr != KERN_SUCCESS) {
-            NSLog(@"get_event_driver() error, IOServiceOpen returned error code: %d", kr);
-            return (io_connect_t)NULL;
-        }
-        
-        IOObjectRelease( service );
-        IOObjectRelease( iter );
-    }
-    return sEventDrvrRef;
-}
-
-void moveCursor(short x, short y)
-{
-    NXEventData event;
-    IOGPoint pos = {x, y};
-    kern_return_t err;
-    
-    bzero(&event, sizeof(NXEventData));
-    
-    IOOptionBits options = kIOHIDSetCursorPosition;
-    err = IOHIDPostEvent(getIOKitEventDriver(), NX_MOUSEMOVED, pos, &event, kNXEventDataVersion, 0, options);
-    
-    if (err != KERN_SUCCESS) {
-        NSLog(@"Warning: Failed to post mouse event. Error: %d", err);
-    }
-}
-
-
-CGPoint currentMouseLocation()
-{
-    CGEventRef event = CGEventCreate(NULL);
-    
-    if (!event) {
-        NSLog(@"Error: could not create event");
-        return CGPointMake(0,0);
-    }
-    
-    CGPoint loc = CGEventGetLocation(event);
-    CFRelease(event);
-    return loc;
-}
 
 bool createEventTap()
 {
