@@ -135,7 +135,7 @@ void showMissionControlWithFullDesktopBarUsingDragMethod(bool useInternalMouseDo
         removeClickableWindowTimer();
         CFTimeInterval startTime = CACurrentMediaTime();
         
-        // Second step: wait until the window is properly under the cursor and can be clicked
+        // Next step: wait until the window is properly under the cursor and can be clicked
         clickableWindowTimer = [NSTimer scheduledTimerWithTimeInterval:0.001 repeats:YES block:^(NSTimer *timer) {
             checkWindowClickable(p, startTime);
         }];

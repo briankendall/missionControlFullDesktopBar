@@ -63,6 +63,7 @@ bool determineIfInMissionControl(bool *result)
 
 void invokeMissionControl()
 {
+    // Using some undocumented API's here!
     extern int CoreDockSendNotification(CFStringRef);
     CoreDockSendNotification(CFSTR("com.apple.expose.awake"));
     lastMissionControlInvocationTime = [NSDate date];

@@ -28,7 +28,7 @@ static void createSharedInvisibleWindowAndView()
     _invisibleWindow.opaque = NO;
     
     // In case we need to debug, uncomment this line to make the invisible window not invisible:
-    [_invisibleWindow setBackgroundColor:[NSColor colorWithRed:0.0 green:1.0 blue:1.0 alpha:0.5]];
+    //[_invisibleWindow setBackgroundColor:[NSColor colorWithRed:0.0 green:1.0 blue:1.0 alpha:0.5]];
     
     _invisibleView = [[InvisibleView alloc] initWithFrame:NSMakeRect(0, 0,
                                                                      _invisibleWindow.frame.size.width,
@@ -75,16 +75,6 @@ InvisibleView * sharedInvisibleView()
     return self;
 }
 
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
-{
-    printf("Received drag event, invoking Mission Control...\n");
-    [self removeAbortTimer];
-    invokeMissionControl();
-    cleanUpAndFinish();
-    
-    return NSDragOperationNone;
-}
-
 - (void)mouseDown:(NSEvent *)event
 {
     if (startedDrag) {
@@ -92,6 +82,11 @@ InvisibleView * sharedInvisibleView()
     }
     
     printf("Received mouse down in invisible view\n");
+    
+    // Having received a mouse down event, we initiate a drag, as when a drag is in
+    // progress, Mission Control always shows the full desktop bar. In this case we
+    // are dragging an empty string of text, which should hopefully have no effect
+    // on any other open apps.
     
     receivedMouseDown = true;
     startedDrag = true;
@@ -105,6 +100,20 @@ InvisibleView * sharedInvisibleView()
     [self createAbortTimer];
 }
 
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    printf("Received drag event, invoking Mission Control...\n");
+    // At this point we know the drag is successfully in progress, so we can invoke
+    // Mission Control and immediately post an event to release the mouse button and
+    // thus end the drag. With any luck, both the user and macOS should be none
+    // the wiser.
+    [self removeAbortTimer];
+    invokeMissionControl();
+    cleanUpAndFinish();
+    
+    return NSDragOperationNone;
+}
+
 - (void)resetTracking
 {
     startedDrag = false;
@@ -115,6 +124,7 @@ InvisibleView * sharedInvisibleView()
 {
     [self removeAbortTimer];
     
+    // We're giving ourselves half a second for the drag to occur, otherwise we abort.
     abortTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:NO block:^(NSTimer *timer) {
         printf("Drag never occurred -- ending\n");
         cleanUpAndFinish();
