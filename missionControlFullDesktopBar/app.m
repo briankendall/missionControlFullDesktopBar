@@ -69,13 +69,16 @@ void invokeMissionControl()
 
 void releaseMissionControl()
 {
-    double timeSince = -[lastMissionControlInvocationTime timeIntervalSinceNow];
+    double timeSince = lastMissionControlInvocationTime ? -[lastMissionControlInvocationTime timeIntervalSinceNow] : 0;
     bool alreadyInMissionControl = false;
     determineIfInMissionControl(&alreadyInMissionControl);
     
     if (timeSince > 0.5 && alreadyInMissionControl) {
         printf("Released mission control trigger when in mission control after adequate time!\n");
         invokeMissionControl();
+        cleanUpAndFinish();
+    } else {
+        printf("Release: not in Mission Control or too soon after initial trigger, so not doing anything");
     }
 }
 

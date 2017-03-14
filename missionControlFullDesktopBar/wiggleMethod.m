@@ -6,12 +6,14 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
 
 static CFMachPortRef eventTapMachPortRef = NULL;
 static CFRunLoopSourceRef eventTapRunLoopSourceRef = NULL;
+static bool wigglingInProgress = false;
 static CGPoint cursorStart;
 static CGPoint cursorDelta = {0, 0};
 static NSDate *wiggleStartTime = nil;
 static int wiggleDuration = kWiggleDefaultDurationMS;
 static int wiggleCount = 0;
 static NSTimer *appStopTimer = nil;
+static NSTimer *wiggleStepTimer = nil;
 
 // Low level event posting, with code by George Warner
 io_connect_t getIOKitEventDriver(void)
@@ -139,6 +141,23 @@ void destroyEventTap()
     }
 }
 
+void performNextWiggleStep(int delayMS, void (^nextStep)(void))
+{
+    wiggleStepTimer = [NSTimer scheduledTimerWithTimeInterval:(delayMS / 1000.0)
+                                                       target:[NSBlockOperation blockOperationWithBlock:nextStep]
+                                                     selector:@selector(main)
+                                                     userInfo:nil
+                                                      repeats:NO];
+}
+
+void removeWiggleStepTimer()
+{
+    if (wiggleStepTimer && [wiggleStepTimer isValid]) {
+        [wiggleStepTimer invalidate];
+        wiggleStepTimer = nil;
+    }
+}
+
 void removeAppStopTimer()
 {
     if (appStopTimer && [appStopTimer isValid]) {
@@ -186,8 +205,7 @@ void processWiggleEventAndPostNext(CGEventRef event)
         // Keep on wiggling...
         // Waiting a little bit of time between receiving an event and posting it just so that
         // we don't flood the system with artificial mouse events
-        dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, kTimeBetweenWiggleEventsMS * NSEC_PER_MSEC);
-        dispatch_after(time, dispatch_get_main_queue(), ^(void){
+        performNextWiggleStep(kTimeBetweenWiggleEventsMS, ^ (void) {
             wiggleCursor();
         });
         
@@ -195,15 +213,9 @@ void processWiggleEventAndPostNext(CGEventRef event)
         // We now move the cursor to its original position plus the accumulated deltas
         // of all of the naturally occurring mouse events that we've observed, so that
         // the cursor ends up where the user expects it to be:
-        printf("sending final movement...\n");
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            stopEventTap();
-            // Need to call this after stopEventTap() so that this event doesn't get snagged by the
-            // event tap
-            moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
+        performNextWiggleStep(0, ^ (void) {
             cleanUpAndFinish();
         });
-        
     }
 }
 
@@ -263,19 +275,28 @@ void showMissionControlWithFullDesktopBarUsingWiggleMethod(int inWiggleDuration)
         // No need to do any cursor wiggling if we're already in Mission
         // Control, so in that case we can just quit here.
         printf("Already in Mission Control\n");
+        cleanUpAndFinish();
         return;
     }
     
+    if (wigglingInProgress) {
+        printf("Already wiggling\n");
+        cleanUpAndFinish();
+        return;
+    }
+    
+    wigglingInProgress = false;
     wiggleDuration = inWiggleDuration;
     wiggleStartTime = nil;
     wiggleCount = 0;
     cursorDelta = CGPointMake(0, 0);
     
-    printf("\n\nBeginning initial wait period\n");
+    printf("\nBeginning initial wait period for wiggle method\n");
     
-    [NSTimer scheduledTimerWithTimeInterval:(kWiggleInitialWaitMS / 1000.0)
-                                     target:[NSBlockOperation blockOperationWithBlock:^{
+    wiggleStepTimer = [NSTimer scheduledTimerWithTimeInterval:(kWiggleInitialWaitMS / 1000.0)
+                                                       target:[NSBlockOperation blockOperationWithBlock:^{
         
+        wigglingInProgress = true;
         cursorStart = currentMouseLocation();
         printf("Original position: %f %f\n", cursorStart.x, cursorStart.y);
         
@@ -286,15 +307,25 @@ void showMissionControlWithFullDesktopBarUsingWiggleMethod(int inWiggleDuration)
         ensureAppStopsAfterDuration(kMaxRunningTimeBufferMS + wiggleDuration);
         wiggleCursor();
     }]
-                                   selector:@selector(main)
-                                   userInfo:nil
-                                    repeats:NO];
+                                                     selector:@selector(main)
+                                                     userInfo:nil
+                                                      repeats:NO];
 }
 
 void wiggleMethodCleanUp()
 {
-    removeAppStopTimer();
     stopEventTap();
+    
+    if (wigglingInProgress) {
+        // Need to call this after stopEventTap() so that this event doesn't get snagged by the
+        // event tap
+        printf("Sending final cursor movement\n");
+        moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
+    }
+    
+    removeAppStopTimer();
+    removeWiggleStepTimer();
+    wigglingInProgress = false;
 }
 
 void wiggleMethodShutDown()
