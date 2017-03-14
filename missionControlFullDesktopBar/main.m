@@ -92,10 +92,7 @@ void wiggleCursor()
 
 bool isWiggleEvent(CGEventRef event)
 {
-    CGPoint location = CGEventGetLocation(event);
-    // Artificial movement created with IOHIDPostEvent will always have no decimal component
-    // Also, there's only one of two positions we're moving the mouse to when wiggling it:
-    return ((location.x == 1.0 && location.y == 1.0) || (location.x == 2.0 && location.y == 1.0));
+    return CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID) == getpid();
 }
 
 void processWiggleEventAndPostNext(CGEventRef event)
