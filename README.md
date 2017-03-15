@@ -31,7 +31,7 @@ There are two methods I've discovered for triggering Mission Control with the fu
 
 ### The Wiggle Method:
 
-The first is the more obvious method of having the mouse move over the desktop bar, and that's what the "wiggle" method is. When used, right as Mission Control is triggered the mouse will wiggle in the upper left corner of the primary display for 120 milliseconds (or a different duration if you want), and then pop the cursor back to where it was before. Any mouse movement during this time is recorded so that the cursor will appear in the place you expect it, rather than the expect position it was in when you triggered Mission Control. The whole experience should be relatively seamless.
+The first is the more obvious method of having the mouse move over the desktop bar, and that's what the "wiggle" method is. When used, right as Mission Control is triggered the mouse will wiggle in the upper left corner of the primary display for 120 milliseconds (or a different duration if you want), and then pop the cursor back to where it was before. Any mouse movement during this time is recorded so that the cursor will appear in the place you expect it, rather than the exact position it was in when you triggered Mission Control. The whole experience should be relatively seamless.
 
 ##### Advantages:
 1. Not quite as hacky as the "drag" method.
