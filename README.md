@@ -57,7 +57,7 @@ Furthermore, it's possible for an app to send its own windows a mouse event dire
 ##### Disadvantages:
 1. Doesn't work if Mission Control is invoked while the mouse is down. This is because this method cannot be used if a real drag is in progress, as there's no way to detect that situation (that I'm presently aware of). So if the mouse is down, the app will invoke Mission Control normally.
 2. Is very hacky! Messing about with invisible windows, undocumented APIs, and fake drag operations may cause unintented side effects.
-3. If the "internal drag" option is used, it's the most hacky! I've definitely noticed strange side effects on my system when using this. One example I've observed is that, after invoking Mission Control, the next middle mouse click doesn't work.
+3. If the "internal drag" option is used, it's the most hacky! (Though I personally haven't noticed any strange side effects from it so far.)
 
 Since the drag method typically works better, it's the default option when the app is launched.
 
