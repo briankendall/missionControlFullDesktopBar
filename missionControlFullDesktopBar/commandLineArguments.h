@@ -4,7 +4,8 @@
 enum {
     kMethodNone = 0,
     kMethodWiggle = 1,
-    kMethodDrag = 2
+    kMethodDrag = 2,
+    kMethodCursorPosition = 3
 };
 
 typedef struct _CommandLineArgs {

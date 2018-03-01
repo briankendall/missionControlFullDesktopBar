@@ -59,9 +59,15 @@ void moveCursor(short x, short y)
 
 void postLeftMouseButtonEvent(UInt32 eventType, short x, short y)
 {
+    postLeftMouseButtonEventWithUserData(eventType, x, y, 0);
+}
+
+void postLeftMouseButtonEventWithUserData(UInt32 eventType, short x, short y, int64_t userData)
+{
     CGEventRef event = CGEventCreateMouseEvent(NULL, (CGEventType)eventType, CGPointMake(x,y), kCGMouseButtonLeft);
     
     if (!event) {
+        NSLog(@"Failed to create mouse event in postLeftMouseButtonEvent()");
         return;
     }
     
@@ -70,6 +76,10 @@ void postLeftMouseButtonEvent(UInt32 eventType, short x, short y)
         // Mouse location can be a decimal value, so for this calculation to work correctly we have to round to the nearest integer:
         CGEventSetIntegerValueField(event, kCGMouseEventDeltaX, x-round(prevMouseLocation.x));
         CGEventSetIntegerValueField(event, kCGMouseEventDeltaY, y-round(prevMouseLocation.y));
+    }
+    
+    if (userData != 0) {
+        CGEventSetIntegerValueField(event, kCGEventSourceUserData, userData);
     }
     
     CGEventPost(kCGSessionEventTap, event);

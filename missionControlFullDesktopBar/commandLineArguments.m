@@ -10,10 +10,21 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
     char *end;
     int c;
     unsigned long val;
+    NSOperatingSystemVersion systemVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
     
     memset(args, 0, sizeof(*args));
-    args->method = kMethodDrag;
+    
+    if (systemVersion.minorVersion < 13) {
+        args->method = kMethodDrag;
+    } else {
+        args->method = kMethodCursorPosition;
+    }
+    
     args->wiggleDuration = kWiggleDefaultDurationMS;
+    
+    for(int i = 0; i < argc; ++i) {
+        printf("arg %d: %s\n", i, argv[i]);
+    }
     
     while (1) {
         static struct option longOptions[] = {
@@ -37,8 +48,6 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
             break;
         }
         
-        //printf("option: %c, optarg: %s\n", c, optarg);
-        
         switch(c) {
             case 'h':
                 showUsage = true;
@@ -60,6 +69,8 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
                     args->method = kMethodWiggle;
                 } else if (strcmp(optarg, "drag") == 0) {
                     args->method = kMethodDrag;
+                } else if (strcmp(optarg, "cursor") == 0) {
+                    args->method = kMethodCursorPosition;
                 } else {
                     showUsage = true;
                 }
@@ -107,8 +118,9 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("                                    Only has an effect when used with a daemon.\n");
         printf("                                    process. All other options have no effect\n");
         printf("                                    when used with -r / --release.\n");
-        printf("  -m, --method <wiggle/drag>        Selects the method to use. Current options\n");
-        printf("                                    are wiggle, drag. Defaults to drag.\n");
+        printf("  -m, --method <wiggle/drag/cursor> Selects the method to use. Current options\n");
+        printf("                                    are wiggle, drag, cursor. Defaults to drag\n");
+        printf("                                    for macOS 10.12, cursor for 10.13 and later\n");
         printf("  -w, --wiggle-duration <duration>  When wiggle method is used, specifies how\n");
         printf("                                    many milliseconds the wiggle will last. Max\n");
         printf("                                    value is 1000. Defaults to %d.\n", kWiggleDefaultDurationMS);

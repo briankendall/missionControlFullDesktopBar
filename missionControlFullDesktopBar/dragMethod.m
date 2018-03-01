@@ -159,7 +159,3 @@ void dragMethodCleanUp()
     [sharedInvisibleWindow() orderOut:nil];
 }
 
-void dragMethodShutDown()
-{
-    // Nothing to do here presently
-}
