@@ -2,11 +2,14 @@
 #import "app.h"
 #import "wiggleMethod.h"
 #import "dragMethod.h"
+#import "cursorPositionMethod.h"
+#import "eventTap.h"
 
 static bool daemonized = false;
 static CFMessagePortRef localPort = nil;
 static CFRunLoopSourceRef localPortRunLoopSource = nil;
 static NSDate *lastMissionControlInvocationTime = nil;
+static NSTimer *appStopTimer = nil;
 
 // Sets the memory result points to to true if Mission Control is up. Returns true if able to
 // successfully determine the state of Mission Control, false if an error occurred.
@@ -92,6 +95,8 @@ void showMissionControlWithFullDesktopBar(CommandLineArgs *args)
         showMissionControlWithFullDesktopBarUsingWiggleMethod(args->wiggleDuration);
     } else if (args->method == kMethodDrag) {
         showMissionControlWithFullDesktopBarUsingDragMethod(args->internalMouseDown);
+    } else if (args->method == kMethodCursorPosition) {
+        showMissionControlWithFullDesktopBarUsingCursorPositionMethod();
     } else {
         cleanUpAndFinish();
     }
@@ -100,13 +105,14 @@ void showMissionControlWithFullDesktopBar(CommandLineArgs *args)
 void cleanUpAndFinish()
 {
     printf("Cleaning up\n");
+    stopEventTap();
     wiggleMethodCleanUp();
     dragMethodCleanUp();
+    cursorPositionMethodCleanUp();
     
     if (!daemonized) {
         printf("Shutting down\n");
-        wiggleMethodShutDown();
-        dragMethodShutDown();
+        destroyEventTap();
         
         if (localPortRunLoopSource) {
             CFRelease(localPortRunLoopSource);
@@ -128,6 +134,7 @@ bool signalDaemon(CommandLineArgs *args)
                                                             CFSTR("net.briankendall.missionControlFullDesktopBar"));
     
     if (!remotePort) {
+        NSLog(@"Could not create remote port for signalling daemon");
         return false;
     }
     
@@ -137,6 +144,8 @@ bool signalDaemon(CommandLineArgs *args)
     
     if (status != kCFMessagePortSuccess) {
         fprintf(stderr, "Failed to signal daemon\n");
+    } else {
+        fprintf(stderr, "Signaled daemon successfully\n");
     }
     
     CFRelease(data);
@@ -159,6 +168,15 @@ void setupDaemon()
                                          receivedMessageAsDaemon, nil, nil);
     CFRunLoopSourceRef localPortRunLoopSource = CFMessagePortCreateRunLoopSource(nil, localPort, 0);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), localPortRunLoopSource, kCFRunLoopCommonModes);
+    
+    // Work around for issue where various notifications and event taps stop working after the current user switches
+    [[[NSWorkspace sharedWorkspace] notificationCenter] addObserverForName:NSWorkspaceSessionDidResignActiveNotification
+                                                                    object:nil
+                                                                     queue:nil
+                                                                usingBlock:^(NSNotification *notification) {
+                                                                     daemonized = false;
+                                                                     cleanUpAndFinish();
+                                                                }];
 }
 
 void becomeDaemon(int argc, const char *argv[])
@@ -177,4 +195,23 @@ void becomeDaemon(int argc, const char *argv[])
     }
 }
 
+void removeAppStopTimer()
+{
+    if (appStopTimer && [appStopTimer isValid]) {
+        [appStopTimer invalidate];
+        appStopTimer = nil;
+    }
+}
 
+void ensureAppStopsAfterDuration(double durationMS)
+{
+    removeAppStopTimer();
+    appStopTimer = [NSTimer scheduledTimerWithTimeInterval:(durationMS / 1000.0)
+                                                    target:[NSBlockOperation blockOperationWithBlock:^{
+        NSLog(@"Error: emergency stop timer has fired");
+        cleanUpAndFinish();
+    }]
+                                                  selector:@selector(main)
+                                                  userInfo:nil
+                                                   repeats:NO];
+}

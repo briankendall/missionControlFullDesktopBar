@@ -3,6 +3,5 @@
 
 void showMissionControlWithFullDesktopBarUsingDragMethod();
 void dragMethodCleanUp();
-void dragMethodShutDown();
 
 #endif /* dragMethod_h */

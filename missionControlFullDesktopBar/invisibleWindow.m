@@ -94,6 +94,13 @@ InvisibleView * sharedInvisibleView()
     NSDraggingItem *dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:stringData];
     NSDraggingSession *draggingSession = [self beginDraggingSessionWithItems:[NSArray arrayWithObject:dragItem]
                                                                        event:event source:self];
+    
+    if (!draggingSession) {
+        NSLog(@"Failed to create dragging session");
+        cleanUpAndFinish();
+        return;
+    }
+    
     draggingSession.animatesToStartingPositionsOnCancelOrFail = NO;
     draggingSession.draggingFormation = NSDraggingFormationNone;
     

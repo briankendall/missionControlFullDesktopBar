@@ -60,6 +60,6 @@ int main(int argc, const char *argv[])
         
         showMissionControlWithFullDesktopBar(&args);
         
-        return NSApplicationMain(argc, argv);;
+        return NSApplicationMain(argc, argv);
     }
 }

@@ -14,5 +14,7 @@ void cleanUpAndFinish();
 bool signalDaemon(CommandLineArgs *args);
 void setupDaemon();
 void becomeDaemon(int argc, const char *argv[]);
+void ensureAppStopsAfterDuration(double durationMS);
+void removeAppStopTimer();
 
 #endif /* app_h */

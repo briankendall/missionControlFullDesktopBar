@@ -16,12 +16,14 @@
 		77B4B4481E3952E2006263EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4471E3952E2006263EE /* main.m */; };
 		77B4B4551E3953CE006263EE /* Expose.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77B4B4541E3953CE006263EE /* Expose.icns */; };
 		77B4B4571E395F9B006263EE /* processes.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B4B4561E395F9B006263EE /* processes.m */; };
+		77EF0ACD2047AB8A00C90A04 /* cursorPositionMethod.m in Sources */ = {isa = PBXBuildFile; fileRef = 77EF0ACC2047AB8A00C90A04 /* cursorPositionMethod.m */; };
+		77EF0AD02047AC4600C90A04 /* eventTap.m in Sources */ = {isa = PBXBuildFile; fileRef = 77EF0ACF2047AC4600C90A04 /* eventTap.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		77AF26041E77AF8900CF110E /* wiggleMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = wiggleMethod.m; sourceTree = "<group>"; };
 		77AF26061E77AF9F00CF110E /* wiggleMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wiggleMethod.h; sourceTree = "<group>"; };
-		77AF26071E77B1B600CF110E /* app.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = app.m; sourceTree = "<group>"; };
+		77AF26071E77B1B600CF110E /* app.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = app.m; sourceTree = "<group>"; };
 		77AF26091E77B29400CF110E /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app.h; sourceTree = "<group>"; };
 		77AF260A1E78614700CF110E /* commandLineArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = commandLineArguments.m; sourceTree = "<group>"; };
 		77AF260E1E7891AD00CF110E /* dragMethod.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = dragMethod.m; sourceTree = "<group>"; };
@@ -38,6 +40,10 @@
 		77B4B4541E3953CE006263EE /* Expose.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Expose.icns; sourceTree = "<group>"; };
 		77B4B4561E395F9B006263EE /* processes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = processes.m; sourceTree = "<group>"; };
 		77B4B4581E39607F006263EE /* processes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = processes.h; sourceTree = "<group>"; };
+		77EF0ACB2047AB8A00C90A04 /* cursorPositionMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursorPositionMethod.h; sourceTree = "<group>"; };
+		77EF0ACC2047AB8A00C90A04 /* cursorPositionMethod.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = cursorPositionMethod.m; sourceTree = "<group>"; };
+		77EF0ACE2047AC4600C90A04 /* eventTap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = eventTap.h; sourceTree = "<group>"; };
+		77EF0ACF2047AC4600C90A04 /* eventTap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = eventTap.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +94,10 @@
 				77B4B4581E39607F006263EE /* processes.h */,
 				77AF26041E77AF8900CF110E /* wiggleMethod.m */,
 				77AF26061E77AF9F00CF110E /* wiggleMethod.h */,
+				77EF0ACC2047AB8A00C90A04 /* cursorPositionMethod.m */,
+				77EF0ACB2047AB8A00C90A04 /* cursorPositionMethod.h */,
+				77EF0ACF2047AC4600C90A04 /* eventTap.m */,
+				77EF0ACE2047AC4600C90A04 /* eventTap.h */,
 			);
 			path = missionControlFullDesktopBar;
 			sourceTree = "<group>";
@@ -162,6 +172,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77EF0AD02047AC4600C90A04 /* eventTap.m in Sources */,
 				77AF260B1E78614700CF110E /* commandLineArguments.m in Sources */,
 				77AF26161E78972C00CF110E /* invisibleWindow.m in Sources */,
 				77B4B4481E3952E2006263EE /* main.m in Sources */,
@@ -170,6 +181,7 @@
 				77AF26131E78928C00CF110E /* events.m in Sources */,
 				77AF26081E77B1B600CF110E /* app.m in Sources */,
 				77AF26051E77AF8900CF110E /* wiggleMethod.m in Sources */,
+				77EF0ACD2047AB8A00C90A04 /* cursorPositionMethod.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
