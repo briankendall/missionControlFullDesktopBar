@@ -120,7 +120,9 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("                                    when used with -r / --release.\n");
         printf("  -m, --method <wiggle/drag/cursor> Selects the method to use. Current options\n");
         printf("                                    are wiggle, drag, cursor. Defaults to drag\n");
-        printf("                                    for macOS 10.12, cursor for 10.13 and later\n");
+        printf("                                    for macOS 10.12, cursor for 10.13 and later.\n");
+        printf("                                    Note that the cursor method does not work in\n");
+        printf("                                    macOS 10.12.\n");
         printf("  -w, --wiggle-duration <duration>  When wiggle method is used, specifies how\n");
         printf("                                    many milliseconds the wiggle will last. Max\n");
         printf("                                    value is 1000. Defaults to %d.\n", kWiggleDefaultDurationMS);
