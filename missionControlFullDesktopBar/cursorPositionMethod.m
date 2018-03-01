@@ -56,11 +56,13 @@ void showMissionControlWithFullDesktopBarUsingCursorPositionMethod()
     mousePositionedSuccessfully = false;
     cursorStart = currentMouseLocation();
     
-    printf("Invoking mission control using cursor position method...\n");
+    printf("Invoking mission control using cursor position method... aaa\n");
     fflush(stdout);
     
     startEventTap();
-    moveCursor(100, 0);
+    // For some reason, using the IOHIDPostEvent method of moving the mouse is unreliable here
+    postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
+    //moveCursor(100, 0);
     ensureAppStopsAfterDuration(100);
 }
 
@@ -79,5 +81,7 @@ void cursorPositionMethodCleanUp()
     
     printf("Sending final cursor movement\n");
     CGPoint cursorDelta = accumulatedCursorMovementFromEventTap();
-    moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
+    // IOHIDPostEvent is also unreliable here
+    postLeftMouseButtonEvent(kCGEventMouseMoved, cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
+    //moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
 }

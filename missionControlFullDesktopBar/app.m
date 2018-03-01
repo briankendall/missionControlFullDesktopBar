@@ -143,9 +143,9 @@ bool signalDaemon(CommandLineArgs *args)
     SInt32 status = CFMessagePortSendRequest(remotePort, 0, data, timeout, timeout, nil, nil);
     
     if (status != kCFMessagePortSuccess) {
-        fprintf(stderr, "Failed to signal daemon\n");
+        NSLog(@"Failed to signal daemon");
     } else {
-        fprintf(stderr, "Signaled daemon successfully\n");
+        NSLog(@"Successfully sent request on local message port");
     }
     
     CFRelease(data);
@@ -157,6 +157,8 @@ static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID
 {
     CommandLineArgs args;
     CFDataGetBytes(data, CFRangeMake(0, sizeof(args)), (UInt8 *)&args);
+    NSLog(@"Daemon: received signal. Args: %d %d %d %d %d %d", args.daemon, args.daemonized, args.release, args.method,
+          args.wiggleDuration, args.internalMouseDown);
     showMissionControlWithFullDesktopBar(&args);
     return NULL;
 }
