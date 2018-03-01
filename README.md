@@ -31,7 +31,7 @@ There are two methods I've discovered for triggering Mission Control with the fu
 
 ### The Wiggle Method:
 
-The first is the more obvious method of having the mouse move over the desktop bar, and that's what the "wiggle" method is. When used, right as Mission Control is triggered the mouse will wiggle in the upper left corner of the primary display for 120 milliseconds (or a different duration if you want), and then pop the cursor back to where it was before. Any mouse movement during this time is recorded so that the cursor will appear in the place you expect it, rather than the expect position it was in when you triggered Mission Control. The whole experience should be relatively seamless.
+The first is the more obvious method of having the mouse move over the desktop bar, and that's what the "wiggle" method is. When used, right as Mission Control is triggered the mouse will wiggle in the upper left corner of the primary display for 120 milliseconds (or a different duration if you want), and then pop the cursor back to where it was before. Any mouse movement during this time is recorded so that the cursor will appear in the place you expect it, rather than the exact position it was in when you triggered Mission Control. The whole experience should be relatively seamless.
 
 ##### Advantages:
 1. Not quite as hacky as the "drag" method.
@@ -57,7 +57,7 @@ Furthermore, it's possible for an app to send its own windows a mouse event dire
 ##### Disadvantages:
 1. Doesn't work if Mission Control is invoked while the mouse is down. This is because this method cannot be used if a real drag is in progress, as there's no way to detect that situation (that I'm presently aware of). So if the mouse is down, the app will invoke Mission Control normally.
 2. Is very hacky! Messing about with invisible windows, undocumented APIs, and fake drag operations may cause unintented side effects.
-3. If the "internal drag" option is used, it's the most hacky! I've definitely noticed strange side effects on my system when using this. One example I've observed is that, after invoking Mission Control, the next middle mouse click doesn't work.
+3. If the "internal drag" option is used, it's the most hacky! (Though I personally haven't noticed any strange side effects from it so far.)
 
 Since the drag method typically works better, it's the default option when the app is launched.
 
