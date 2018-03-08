@@ -5,9 +5,11 @@
 
 void showMissionControlWithFullDesktopBarUsingCursorPositionMethod();
 void cursorPositionMethodCleanUp();
-bool isCursorPositionEvent(CGEventRef event, CGEventTapProxy proxy);
+bool isCursorPositionEvent(CGEventRef event);
+bool isCursorPositionResetEvent(CGEventRef event);
 void handleCursorPositionEventAndPostNext();
 void handleNonCursorPositionEvent();
+void handleCursorPositionResetEvent(CGEventRef event);
 
 #endif
 

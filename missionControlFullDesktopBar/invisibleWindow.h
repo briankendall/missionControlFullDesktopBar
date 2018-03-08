@@ -11,5 +11,6 @@
 
 NSWindow * sharedInvisibleWindow();
 InvisibleView * sharedInvisibleView();
+bool sharedInvisibleWindowExists();
 
 #endif /* invisibleWindow_h */

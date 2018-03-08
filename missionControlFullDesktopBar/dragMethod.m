@@ -156,6 +156,9 @@ void dragMethodCleanUp()
     }
     
     removeClickableWindowTimer();
-    [sharedInvisibleWindow() orderOut:nil];
+    
+    if (sharedInvisibleWindowExists()) {
+        [sharedInvisibleWindow() orderOut:nil];
+    }
 }
 

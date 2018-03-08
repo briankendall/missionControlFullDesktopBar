@@ -107,7 +107,7 @@ void showMissionControlWithFullDesktopBarUsingWiggleMethod(int inWiggleDuration)
         cursorStart = currentMouseLocation();
         printf("Original position: %f %f\n", cursorStart.x, cursorStart.y);
         
-        if (!startEventTap()) {
+        if (!startEventTapAndResetCursorDelta()) {
             return;
         }
         

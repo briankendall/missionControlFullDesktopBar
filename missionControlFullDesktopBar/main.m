@@ -60,6 +60,7 @@ int main(int argc, const char *argv[])
         
         showMissionControlWithFullDesktopBar(&args);
         
-        return NSApplicationMain(argc, argv);
+        int statusCode = NSApplicationMain(argc, argv);
+        return statusCode;
     }
 }

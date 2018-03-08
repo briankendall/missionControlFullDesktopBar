@@ -37,6 +37,11 @@ static void createSharedInvisibleWindowAndView()
     [_invisibleView registerForDraggedTypes:@[NSStringPboardType]];
 }
 
+bool sharedInvisibleWindowExists()
+{
+    return _invisibleWindow != nil;
+}
+
 NSWindow * sharedInvisibleWindow()
 {
     if (!_invisibleWindow) {

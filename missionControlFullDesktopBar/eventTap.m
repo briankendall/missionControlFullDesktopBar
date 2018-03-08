@@ -38,14 +38,18 @@ bool createEventTap()
 
 bool startEventTap()
 {
-    cursorDelta = CGPointMake(0, 0);
-    
     if (eventTapMachPortRef && eventTapRunLoopSourceRef) {
         CGEventTapEnable(eventTapMachPortRef, true);
         return true;
     } else {
         return createEventTap();
     }
+}
+
+bool startEventTapAndResetCursorDelta()
+{
+    cursorDelta = CGPointMake(0, 0);
+    return startEventTap();
 }
 
 void stopEventTap()
@@ -103,8 +107,10 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
     
     if (isWiggleEvent(event)) {
         processWiggleEventAndPostNext(event);
-    } else if (isCursorPositionEvent(event, proxy)) {
+    } else if (isCursorPositionEvent(event)) {
         handleCursorPositionEventAndPostNext();
+    } else if (isCursorPositionResetEvent(event)) {
+        handleCursorPositionResetEvent(event);
     } else {
         accumulateNaturalMouseMovement(event);
         handleNonCursorPositionEvent();
