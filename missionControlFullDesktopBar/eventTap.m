@@ -109,11 +109,8 @@ CGEventRef mouseMovementEventTapFunction(CGEventTapProxy proxy, CGEventType type
         processWiggleEventAndPostNext(event);
     } else if (isCursorPositionEvent(event)) {
         handleCursorPositionEventAndPostNext();
-    } else if (isCursorPositionResetEvent(event)) {
-        handleCursorPositionResetEvent(event);
     } else {
         accumulateNaturalMouseMovement(event);
-        handleNonCursorPositionEvent();
     }
     
     return event;

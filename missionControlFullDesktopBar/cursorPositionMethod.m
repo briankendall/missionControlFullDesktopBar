@@ -21,7 +21,7 @@ void handleCursorPositionEventAndPostNext()
         return;
     }
     
-    NSLog(@"Received mouse positioning event!\n");
+    printf("Received mouse positioning event!\n");
     fflush(stdout);
     mousePositionedSuccessfully = true;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.003 * NSEC_PER_SEC)), 
@@ -32,7 +32,6 @@ void handleCursorPositionEventAndPostNext()
         // animation will start.
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), 
                        dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^ () {
-            //cleanUpAndFinish();
             //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
             moveCursor(cursorStart.x, cursorStart.y);
             cleanUpAndFinish();
@@ -49,13 +48,12 @@ void handleCursorPositionResetEvent(CGEventRef event)
         CGPoint p2 = currentMouseLocation();
         CGPoint p3;
         CGSGetCurrentCursorLocation(CGSMainConnectionID(), &p3);
-        NSLog(@"Received mouse reset event! loc: %.1f %.1f", p.x, p.y);
-        NSLog(@".. check loc: %.1f %.1f     check loc2: %.1f %.1f", p2.x, p2.y, p3.x, p3.y);
+        printf("Received mouse reset event! loc: %.1f %.1f", p.x, p.y);
+        printf(".. check loc: %.1f %.1f     check loc2: %.1f %.1f", p2.x, p2.y, p3.x, p3.y);
         
         if (!CGPointEqualToPoint(p, p2)) {
             startEventTap();
-            NSLog(@"**** Something went wrong! Reissuing reset mouse event!");
-            //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
+            printf("**** Something went wrong! Reissuing reset mouse event!");
             moveCursor(cursorStart.x, cursorStart.y);
         } else {
             cleanUpAndFinish();
@@ -70,41 +68,18 @@ bool isCursorPositionEvent(CGEventRef event)
             && CGEventGetLocation(event).x > 95 && CGEventGetLocation(event).x < 105);
 }
 
-bool isCursorPositionResetEvent(CGEventRef event)
-{
-    return false;
-    /*
-    return (CGEventGetIntegerValueField(event, kCGEventSourceUserData) == kCursorPositionResetEventTag ||
-            (CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID) == getpid() &&
-             CGEventGetLocation(event).x == cursorStart.x && CGEventGetLocation(event).y == cursorStart.y));*/
-}
-
-void handleNonCursorPositionEvent()
-{
-    /*if (cursorMethodInProgress) {
-        // It's a little shady posting an event while we're potentially in the middle of an
-        // event tap callback, however this seems to be the best way to make sure the cursor
-        // stays where we want at the exact moment that mission control activates. It's not
-        // perfect, but it works better than trying to use a regular repeating timer to
-        // position the cursor, using the IOHIDEventPost interface for positioning the cursor,
-        // or using CGEventTapPostEvent to post another event from within the event tap the
-        // officially supported way.
-        postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
-    }*/
-}
-
 void showMissionControlWithFullDesktopBarUsingCursorPositionMethod()
 {
     cursorMethodInProgress = true;
     mousePositionedSuccessfully = false;
     cursorStart = currentMouseLocation();
     
-    NSLog(@"Invoking mission control using cursor position method...");
-    NSLog(@"Start position: %f %f", cursorStart.x, cursorStart.y);
+    printf("Invoking mission control using cursor position method...");
     fflush(stdout);
     
     startEventTapAndResetCursorDelta();
-    // For some reason, using the IOHIDPostEvent method of moving the mouse is unreliable here
+    // I honestly can't tell which method is more reliable... CGEventPost or IOHIDPostEvent. Both
+    // have issues. Right now I've settled on IOHIDPostEvent.
     //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
     moveCursor(100, 0);
     ensureAppStopsAfterDuration(100);
@@ -122,26 +97,4 @@ void cursorPositionMethodCleanUp()
         NSLog(@"Error: cursor method failed to position cursor. Am invoking mission control anyway...");
         invokeMissionControl();
     }
-    
-    for(int i = 0; i < 4; ++i) {
-        CGPoint p = currentMouseLocation();
-        NSLog(@"... after cursor loc: %f %f", p.x, p.y);
-        usleep(0.04 * USEC_PER_SEC);
-    }
-    
-    //printf("Sending final cursor movement\n");
-    CGPoint cursorDelta = CGPointMake(0,0);//accumulatedCursorMovementFromEventTap();
-    // IOHIDPostEvent is also unreliable here
-    //postLeftMouseButtonEvent(kCGEventMouseMoved, cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
-    //moveCursor(cursorStart.x, cursorStart.y);
-    //postLeftMouseButtonEvent(
-    /*stopEventTap();
-    
-    for(int i = 0; i < 10; ++i) {
-        CGPoint p = currentMouseLocation();
-        NSLog(@"... after cursor loc: %f %f", p.x, p.y);
-        usleep(0.04 * USEC_PER_SEC);
-    }*/
-    
-    //moveCursor(cursorStart.x + cursorDelta.x, cursorStart.y + cursorDelta.y);
 }
