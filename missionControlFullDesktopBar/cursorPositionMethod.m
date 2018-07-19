@@ -24,17 +24,18 @@ void handleCursorPositionEventAndPostNext()
     NSLog(@"Received mouse positioning event!\n");
     fflush(stdout);
     mousePositionedSuccessfully = true;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.001 * NSEC_PER_SEC)), 
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.003 * NSEC_PER_SEC)), 
                    dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^ () {
         invokeMissionControl();
         
         // This is something of a race condition, but as far as I know there's no way to know exactly when Mission Control's
-        // animation will start. But a wait time of 0.001 seconds seems to work very consistently, so 0.003 seconds should
-        // work three times as very consistently!
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.003 * NSEC_PER_SEC)), 
+        // animation will start.
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), 
                        dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^ () {
             //cleanUpAndFinish();
-            postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
+            //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
+            moveCursor(cursorStart.x, cursorStart.y);
+            cleanUpAndFinish();
         });
     });
 }
@@ -54,7 +55,8 @@ void handleCursorPositionResetEvent(CGEventRef event)
         if (!CGPointEqualToPoint(p, p2)) {
             startEventTap();
             NSLog(@"**** Something went wrong! Reissuing reset mouse event!");
-            postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
+            //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, cursorStart.x, cursorStart.y, kCursorPositionResetEventTag);
+            moveCursor(cursorStart.x, cursorStart.y);
         } else {
             cleanUpAndFinish();
         }
@@ -70,12 +72,16 @@ bool isCursorPositionEvent(CGEventRef event)
 
 bool isCursorPositionResetEvent(CGEventRef event)
 {
-    return (CGEventGetIntegerValueField(event, kCGEventSourceUserData) == kCursorPositionResetEventTag);
+    return false;
+    /*
+    return (CGEventGetIntegerValueField(event, kCGEventSourceUserData) == kCursorPositionResetEventTag ||
+            (CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID) == getpid() &&
+             CGEventGetLocation(event).x == cursorStart.x && CGEventGetLocation(event).y == cursorStart.y));*/
 }
 
 void handleNonCursorPositionEvent()
 {
-    if (cursorMethodInProgress) {
+    /*if (cursorMethodInProgress) {
         // It's a little shady posting an event while we're potentially in the middle of an
         // event tap callback, however this seems to be the best way to make sure the cursor
         // stays where we want at the exact moment that mission control activates. It's not
@@ -84,7 +90,7 @@ void handleNonCursorPositionEvent()
         // or using CGEventTapPostEvent to post another event from within the event tap the
         // officially supported way.
         postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
-    }
+    }*/
 }
 
 void showMissionControlWithFullDesktopBarUsingCursorPositionMethod()
@@ -94,12 +100,13 @@ void showMissionControlWithFullDesktopBarUsingCursorPositionMethod()
     cursorStart = currentMouseLocation();
     
     NSLog(@"Invoking mission control using cursor position method...");
+    NSLog(@"Start position: %f %f", cursorStart.x, cursorStart.y);
     fflush(stdout);
     
     startEventTapAndResetCursorDelta();
     // For some reason, using the IOHIDPostEvent method of moving the mouse is unreliable here
-    postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
-    //moveCursor(100, 0);
+    //postLeftMouseButtonEventWithUserData(kCGEventMouseMoved, 100, 0, kCursorPositionEventTag);
+    moveCursor(100, 0);
     ensureAppStopsAfterDuration(100);
 }
 
