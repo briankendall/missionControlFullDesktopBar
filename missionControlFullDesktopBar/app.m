@@ -161,6 +161,12 @@ static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID
     return NULL;
 }
 
+void quitDaemon()
+{
+    daemonized = false;
+    cleanUpAndFinish();
+}
+
 void setupDaemon()
 {
     daemonized = true;
@@ -170,13 +176,15 @@ void setupDaemon()
     CFRunLoopAddSource(CFRunLoopGetCurrent(), localPortRunLoopSource, kCFRunLoopCommonModes);
     
     // Work around for issue where various notifications and event taps stop working after the current user switches
+    // or the computer goes to sleep.
     [[[NSWorkspace sharedWorkspace] notificationCenter] addObserverForName:NSWorkspaceSessionDidResignActiveNotification
                                                                     object:nil
                                                                      queue:nil
-                                                                usingBlock:^(NSNotification *notification) {
-                                                                     daemonized = false;
-                                                                     cleanUpAndFinish();
-                                                                }];
+                                                                usingBlock:^(NSNotification *notification) { quitDaemon(); }];
+    [[[NSWorkspace sharedWorkspace] notificationCenter] addObserverForName:NSWorkspaceScreensDidSleepNotification
+                                                                    object:nil
+                                                                     queue:nil
+                                                                usingBlock:^(NSNotification *notification) { quitDaemon(); }];
 }
 
 void becomeDaemon(int argc, const char *argv[])
