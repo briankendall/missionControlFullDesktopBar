@@ -10,21 +10,10 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
     char *end;
     int c;
     unsigned long val;
-    NSOperatingSystemVersion systemVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
     
     memset(args, 0, sizeof(*args));
-    
-    if (systemVersion.minorVersion < 13) {
-        args->method = kMethodDrag;
-    } else {
-        args->method = kMethodCursorPosition;
-    }
-    
+    args->method = kMethodDrag;
     args->wiggleDuration = kWiggleDefaultDurationMS;
-    
-    for(int i = 0; i < argc; ++i) {
-        printf("arg %d: %s\n", i, argv[i]);
-    }
     
     while (1) {
         static struct option longOptions[] = {
@@ -119,10 +108,8 @@ bool parseCommandLineArgs(CommandLineArgs *args, int argc, const char *argv[])
         printf("                                    process. All other options have no effect\n");
         printf("                                    when used with -r / --release.\n");
         printf("  -m, --method <wiggle/drag/cursor> Selects the method to use. Current options\n");
-        printf("                                    are wiggle, drag, cursor. Defaults to drag\n");
-        printf("                                    for macOS 10.12, cursor for 10.13 and later.\n");
-        printf("                                    Note that the cursor method does not work in\n");
-        printf("                                    macOS 10.12.\n");
+        printf("                                    are wiggle, drag, cursor (EXPERIMENTAL).\n");
+        printf("                                    Defaults to drag.\n");
         printf("  -w, --wiggle-duration <duration>  When wiggle method is used, specifies how\n");
         printf("                                    many milliseconds the wiggle will last. Max\n");
         printf("                                    value is 1000. Defaults to %d.\n", kWiggleDefaultDurationMS);

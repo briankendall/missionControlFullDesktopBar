@@ -134,7 +134,7 @@ bool signalDaemon(CommandLineArgs *args)
                                                             CFSTR("net.briankendall.missionControlFullDesktopBar"));
     
     if (!remotePort) {
-        NSLog(@"Could not create remote port for signalling daemon");
+        printf("Could not create remote port for signalling daemon, probably because it doesn't exist\n");
         return false;
     }
     
@@ -144,8 +144,6 @@ bool signalDaemon(CommandLineArgs *args)
     
     if (status != kCFMessagePortSuccess) {
         NSLog(@"Failed to signal daemon");
-    } else {
-        NSLog(@"Successfully sent request on local message port");
     }
     
     CFRelease(data);
@@ -157,8 +155,8 @@ static CFDataRef receivedMessageAsDaemon(CFMessagePortRef port, SInt32 messageID
 {
     CommandLineArgs args;
     CFDataGetBytes(data, CFRangeMake(0, sizeof(args)), (UInt8 *)&args);
-    NSLog(@"Daemon: received signal. Args: %d %d %d %d %d %d", args.daemon, args.daemonized, args.release, args.method,
-          args.wiggleDuration, args.internalMouseDown);
+    printf("Daemon: received signal. Args: %d %d %d %d %d %d", args.daemon, args.daemonized, args.release, args.method,
+           args.wiggleDuration, args.internalMouseDown);
     showMissionControlWithFullDesktopBar(&args);
     return NULL;
 }
