@@ -87,6 +87,7 @@ InvisibleView * sharedInvisibleView()
     }
     
     printf("Received mouse down in invisible view\n");
+    [self createAbortTimer];
     
     // Having received a mouse down event, we initiate a drag, as when a drag is in
     // progress, Mission Control always shows the full desktop bar. In this case we
@@ -97,6 +98,7 @@ InvisibleView * sharedInvisibleView()
     startedDrag = true;
     NSString *stringData = @"";
     NSDraggingItem *dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:stringData];
+    dragItem.draggingFrame = NSMakeRect(0, 0, 1, 1);
     NSDraggingSession *draggingSession = [self beginDraggingSessionWithItems:[NSArray arrayWithObject:dragItem]
                                                                        event:event source:self];
     
@@ -108,8 +110,6 @@ InvisibleView * sharedInvisibleView()
     
     draggingSession.animatesToStartingPositionsOnCancelOrFail = NO;
     draggingSession.draggingFormation = NSDraggingFormationNone;
-    
-    [self createAbortTimer];
 }
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
