@@ -2,7 +2,7 @@
 
 An application that invokes Mission Control in a manner that causes all of the desktop previews to be present immediately like they were in macOS 10.10 and earlier, rather than requiring the user to mouse over them. This is accomplished using one of two incredibly hacky and unsavory methods.
 
-It's intended to be a replacement for [forceFullDesktopBar](https://github.com/briankendall/forceFullDesktopBar) as it seems unlikely that method will ever be able to work in macOS 10.12 and later. While this app may work in macOS 10.11, I personally haven't tested it and you should just use [forceFullDesktopBar](https://github.com/briankendall/forceFullDesktopBar) because it will work a lot better.
+It's intended to be an alternative to [forceFullDesktopBar](https://github.com/briankendall/forceFullDesktopBar) that doesn't require disabling System Integrity Protection or injecting code into the Dock. I prefer forceFullDesktopBar as it works consistently and with less strange side effects. Either way it's going to be hacky though, so pick your poison!
 
 ## Quick start
 
@@ -69,7 +69,7 @@ This app has the following important command line options:
 Runs the program as a daemon. This causes the process to fork, trigger Mission Control with the options you've specified, and then continue running. Any further executions will cause the daemon process to invoke Mission Control again as long as it continues to run. This is useful because it makes invoking Mission Control more responsive, as the process doesn't need to create the resources it needs every single time it runs. This applies particularly when using the "drag" method. It also allows using the -r / --release option. Note that you can specify this flag when a daemon is already running, and it will not spawn another daemon.
 * `-r / --release`    
 Indicates that a button, keystroke, or whatever that should trigger Mission Control has been released. Basically if this option is used within 500 ms of invoking Mission Control, will uninvoke Mission Control, otherwise nothing happens. Only has an effect when used with a daemon process. All other options have no effect when used with -r / --release.
-* `-m / --method \<wiggle/drag\>`    
+* `-m / --method <wiggle/drag>`    
 Selects which method to use to invoke Mission Control with the full desktop bar. Current options are wiggle and drag. The default is drag. See above for a more thorough explanation of what these methods are and the consequences of using them.
 * `-w / --wiggle-duration <duration>`    
 When the wiggle method is used, specifies how many milliseconds the wiggling will last. Defaults to 120 ms, and the maximum is 1000 ms.
@@ -87,6 +87,8 @@ If you still notice strange side effects when using the "drag" method, or it oth
 If the "wiggle" method doesn't work consistently, try increasing the wiggle duration, using options like: `-d -m wiggle -w 200`. If 200 ms doesn't work, try gradually increasing it until you find a value that does work consistently.
 
 If it's still not working, you may be SOL. You can create an issue for the project, but I can't guarantee I'll be able to fix it. The bug you experience may not be the slightest bit reproduceable on my or anyone else's system, or it may be an unavoidable consequence of how this app works.
+
+Or you can use [forceFullDesktopBar](https://github.com/briankendall/forceFullDesktopBar), which I think works a lot better. It does require disabling System Integrity Protection, but if you made it this far, do you really feel you need it turned on anyway?
 
 ## Why?
 
